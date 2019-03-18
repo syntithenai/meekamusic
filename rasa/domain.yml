@@ -1,0 +1,73 @@
+intents:
+- greet
+- goodbye
+- thanks
+- deny
+- joke
+- name
+- affirm
+- play_tracks
+- play_artist
+- play_album
+- play_tag
+- play_playlist
+- play_favorites
+- play_recent
+- play_new
+- play_this_artist
+- play_this_album
+- play_this_tag
+- stop_playing
+- next_track
+- previous_track
+- add_favorite
+- remove_favorite
+- add_tag
+- clear_playlist
+- shuffle_playlist
+- save_playlist
+- volume
+- help
+- help_genre
+- info
+- info_artist
+- info_album
+- info_track
+
+
+
+entities:
+- track
+- album
+- artist
+- tag
+- playlist
+
+
+slots:
+  name:
+    type: text
+
+
+actions:
+- action_end
+- utter_name
+- utter_thanks
+- utter_greet
+- utter_goodbye
+- joke_tell_me_a_joke
+
+
+templates:
+  utter_name:
+  - text: "Hey there! Tell me your name."
+
+  utter_greet:
+  - text: "Nice to meet you {name}. How can I help?"
+
+  utter_goodbye:
+  - text: "Talk to you later!"
+  
+  utter_thanks:
+  - text: "My pleasure."
+  

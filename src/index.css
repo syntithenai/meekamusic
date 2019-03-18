@@ -1,0 +1,102 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+header a:visited,header  a:link,header a:active,header  a:hover,header a {
+    color: white;
+}
+.odd { 
+    background-color:lightgrey;
+}
+.playlist > .tracks >  div >  div   .item:nth-last-child(1) {
+    height: 240px !important; 
+}
+.even {
+    background-color:lightblue;
+}
+.oddinner {
+    background-color:#dee6f4;
+}
+.eveninner {
+    background-color: #eff0f2;
+}
+a:visited,a:link,a:active,a:hover,a {
+    color: black;
+}
+div.tracks div.item {
+    padding:0.2em;
+}
+div.tracks div.item.selected {
+    border: 2px solid darkblue;
+    background-color:darkseagreen;
+}
+.playlists {
+    width: 100%
+}
+.playlists .item {
+    width: 100%;
+    border: 1px solid black;
+    height: 3em;
+    padding: 0.2em;
+}
+
+.media-wrapper {
+    position: fixed;
+    top:0;
+    left:0;
+    bottom:0;
+    right:0;
+    width: 100%;
+    height: 100%;
+    background-color:black;
+    z-index: 99;
+}
+.media-wrapper video {
+    position: fixed;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    z-index: 99;
+}
+.media-wrapper iframe {
+    position: fixed;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100% ;
+    z-index: 99;
+    
+}
+
+.media-wrapper-audio {
+    display: none;
+}
+.list-group-item {
+    width: 100%;
+}
+.warning {
+    border: 1px solid red;
+    color: red;
+    font-weight: bold;
+    padding:0.3em;
+    margin:0.3em;
+    margin-left:3em;
+    margin-right:3em;
+    padding-left:4em;
+    padding-right:4em;
+}
+.waiting-overlay {
+    top:0;
+    left:0;
+    bottom:0;
+    right:0;
+    width: '100%';
+    height: '100%';
+    position: fixed;
+    z-index: 9999;
+    opacity: 0.6;
+    background-color:grey;
+}
+
