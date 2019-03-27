@@ -137,10 +137,7 @@ export default class LibraryList extends Component {
         let that = this;
      //   console.log('LOCAL SERCH-' + filter);
         this.props.fetchData(this.props.apiUrl+'/tracksbyartist?search='+encodeURI(filter)+'&limit='+limit)
-        .then(function(response) {
-            //console.log(['got response', response])
-            return response.json()
-        }).then(function(json) {
+        .then(function(json) {
             // add tracks in 
             json.sort(that.sortTracksByAlbumAndTrackNumber);
             
@@ -167,9 +164,7 @@ export default class LibraryList extends Component {
         let that = this;
      //   console.log('LOCAL SERCH-' + filter);
         this.props.fetchData(this.props.apiUrl+'/tracksbyartist?search='+encodeURI(filter)+'&limit='+limit)
-        .then(function(response) {
-            return response.json()
-        }).then(function(json) {
+        .then(function(json) {
             json.sort(that.sortTracksByAlbumAndTrackNumber);
             //for (let track in json) {
                //that.props.addTrack(json[track],that.props.currentPlaylist);
@@ -190,10 +185,7 @@ export default class LibraryList extends Component {
         this.props.startWaiting();
         let that = this;
         this.props.fetchData(this.props.apiUrl+'/tracksbyalbum?artist='+encodeURI(artist)+'&album='+encodeURI(album)+'&limit='+limit)
-        .then(function(response) {
-            //console.log(['got response', response])
-            return response.json()
-        }).then(function(json) {
+        .then(function(json) {
             json.sort(that.sortTracksByAlbumAndTrackNumber);
             //for (let track in json) {
                //if (parseInt(track,10) === 0) {
@@ -218,10 +210,7 @@ export default class LibraryList extends Component {
         this.props.startWaiting();
         let that = this;
         this.props.fetchData(this.props.apiUrl+'/tracksbyalbum?artist='+encodeURI(artist)+'&album='+encodeURI(album)+'&limit='+limit)
-        .then(function(response) {
-            //console.log(['got response', response])
-            return response.json()
-        }).then(function(json) {
+        .then(function(json) {
             json.sort(that.sortTracksByAlbumAndTrackNumber);
             //that.setState({'tracks':json});
             //for (let track in json) {
@@ -586,7 +575,7 @@ export default class LibraryList extends Component {
                             
                             let linkTo = "/meeka/search/"+encodeURI(artist.originalTitle+' ' +album);
                             //"url('/albumart?artist="+"greylarsonpaddyleague"+"&album="+"greylarsonpaddyleaguedarkofthemoon"+")"
-                            let bgImage = "url('/albumart?artist="+encodeURI(artist.title)+"&album="+encodeURI(akey)+"')"
+                            let bgImage = "url('"+that.props.apiUrl+"/albumart?artist="+encodeURI(artist.title)+"&album="+encodeURI(akey)+"')"
                             //http://localhost:7001/albumart?artist=greylarsonpaddyleague&album=greylarsonpaddyleaguedarkofthemoon
                             let imageSize = ((tracks.length + 1) * 2.2) + 'em';
                             let albumArtStyle = {backgroundImage:bgImage, position:'absolute',opacity:'0.6',backgroundRepeat: 'no-repeat',backgroundSize: '100% 100%', right: '20px', top:'65px',width: imageSize,height: imageSize,maxWidth:'40%',backgroundPosition:'right',zIndex:0};
@@ -790,8 +779,7 @@ export default class LibraryList extends Component {
             //let paddingTop=Utils.isMobile() ? '5em' : '3em';
             //if (this.props.hideHeader) paddingTop='0em'; 
             //style={{paddingTop:paddingTop}}
-            return   <div  >
-                            
+            return   <div>
                 <List
                   style={{position:'fixed',top:'0px',left:'0px'}}
                   ref={listRef}
@@ -807,7 +795,7 @@ export default class LibraryList extends Component {
             </div>
           //return JSON.stringify(artists);   
         } else {
-            return <div>{this.props.buttons}<div className='nomatch'>No matches</div></div>
+            return <div><br/><br/><br/><br/>{this.props.buttons}<div className='nomatch'>No matches</div></div>
         }
         
         

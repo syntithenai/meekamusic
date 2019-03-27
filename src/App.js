@@ -1,3 +1,4 @@
+/* global window */
 import React, { Component } from 'react';
 // eslint-disable-next-line
 import {BrowserRouter as Router,Route,Link,Switch,Redirect} from 'react-router-dom'
@@ -19,8 +20,7 @@ import LoginSystem from 'react-express-oauth-login-system'
 import ReactResizeDetector from 'react-resize-detector';
 //import {debounce} from 'throttle-debounce';
 
-
- 
+import youTubeApiKey from './youTubeApiKey'
 class App extends Component {
     
     constructor(props) {
@@ -56,8 +56,12 @@ class App extends Component {
   
     componentDidMount() {
         window.addEventListener('scroll', this.handleScroll);
-    }
-
+        // else {
+			//window.location = url;
+		//}
+	}
+    
+    
     componentWillUnmount() {
         window.removeEventListener('scroll', this.handleScroll);
     }
@@ -249,14 +253,13 @@ class App extends Component {
       }
     }; 
     
-    allowUser(user) {
-        return true;
-        //if (user && user.username && user.username in config.allowed) {
+    //allowUser(user) {
+        //if (allowedUsers && allowedUsers.length > 0 && user && user.username && user.username in allowedUsers) {
             //return true;
         //} else {
             //return false;
         //}
-    };
+    //};
     
     //setUser(user) {
         ////console.log(['setuser',user]);
@@ -298,65 +301,41 @@ class App extends Component {
         this.setState({height:parseInt(height,10),width:parseInt(width,10)});
     };
     
-    onLogin(user) {
-       console.log(['ONLOGIN',user]);
-        //that.props.loadMeekaFromLocalStorage();
+    onLogin(user,props) {
+       console.log(['ONLOGIN',user,props,this.props]);
         this.setState({user:user});
+        let lastPath = localStorage.getItem('lastPath')
+        console.log(lastPath);
+        if (lastPath && lastPath.length > 0 && lastPath !== null  && lastPath !== 'null') {
+		  localStorage.setItem('lastPath',null);	
+		 // window.location = lastPath;
+		}
+        
     };
     
-    onLogout() {
-       // console.log(['ONLOGout']);
+    onLogout(user,props) {
+       console.log(['ONLOGout APP']);
+       props.history.push('/');
         this.setState({user:null});
     };
+    
+
  
     render() {
-       // let that = this;
-        
-       // console.log('APP RENDER');
-        //let options = {
-         //isLoaded:this.state.isLoaded,
-            //playlists:this.state.playlists,
-            //currentPlaylist:this.state.currentPlaylist,
-            //currentTrack:this.state.currentTrack,
-            //isPlaying:this.state.isPlaying,
-            //playMode:this.state.playMode,
-            //viewMode:this.state.viewMode,
-            //user:this.state.user,
-            //searchFilter:this.state.searchFilter,
-            //searchFilterTag:this.state.searchFilterTag,
-            //searchResults:this.state.searchResults,
-            //artists:this.state.artists,
-            //showingPlayControls:this.state.showingPlayControls,
-            //expandedArtists:this.state.expandedArtists,
-            //hideSearchResults:this.state.hideSearchResults,
-            //searchResultsScrollToIndex:this.state.searchResultsScrollToIndex,
-         //};   
-        ////this.assignOptions(this.state,this,true) //  //this.state.options; //
-        //console.log(options);
-        
-        // loadMeekaFromLocalStorage={this.loadMeekaFromLocalStorage} resetMeekaLocalStorage={this.resetMeekaLocalStorage} 
-        //<PropsRoute  path='/' exact={true} component={HomePage}  />
-                //
-             
-        //let user = this.getUser();
-        //let token = this.getToken();
-        
         let mainStyle={paddingTop:'0em'}
-        //if (!this.state.hideHeader) {
-            //mainStyle.paddingTop = '4em'
-        //}
         let marginTop =  '4em'; //Utils.isMobile() ? '4em' :
         return (
           <Router>
-                          
           <div className="App" style={{backgroundColor:'white',minHeight:800,marginTop:marginTop}} >
                 <div >
-                    <MeekaPlayer apiUrl='/api/meeka' user={this.state.user}  startWaiting={this.startWaiting} stopWaiting={this.stopWaiting}  isLoggedIn={this.isLoggedIn} width={this.state.width} height={this.state.height} onScroll={this.onScroll} hideHeader={this.state.hideHeader} hideFooter={this.state.hideFooter} />
+                    <MeekaPlayer youTubeApiKey={youTubeApiKey.key} apiUrl='/api/meeka' user={this.state.user}  startWaiting={this.startWaiting} stopWaiting={this.stopWaiting}  isLoggedIn={this.isLoggedIn} width={this.state.width} height={this.state.height} onScroll={this.onScroll} hideHeader={this.state.hideHeader} hideFooter={this.state.hideFooter} />
                     <div style={mainStyle}>
                         <Route exact path='/' component={HomePage}/>
+                        <Route exact path='/meeka' component={HomePage}/>
+                        
                         <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} >
                         </ReactResizeDetector>
-                        <PropsRoute path='/' component={LoginSystem} authServer={'/api/login'}  setUser={this.onLogin}  onLogin={this.onLogin} onLogout={this.onLogout} startWaiting={this.startWaiting} stopWaiting={this.stopWaiting} allowUser={this.allowUser} loginButtons={['google','twitter','facebook','github']} />
+                        <PropsRoute path='/' component={LoginSystem}  authServer={'/api/login'}  setUser={this.onLogin}  onLogin={this.onLogin} onLogout={this.onLogout} startWaiting={this.startWaiting} stopWaiting={this.stopWaiting} allowUser={this.allowUser} loginButtons={['google','twitter','facebook','github']} />
                    </div>
                 </div>
                 
@@ -365,7 +344,7 @@ class App extends Component {
           {(this.state.waiting) && <div className='waiting-overlay' onClick={this.stopWaiting} ><img style={{marginTop: '10em', width: '80px'}} src="/loading.gif" alt="waiting" /></div>}  
            </div>
          
-          </Router>
+          </Router> 
           
           
         );

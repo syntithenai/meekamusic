@@ -1,3 +1,5 @@
+/* global window */
+
 import React, { Component } from 'react';
 import PlayControls from './PlayControls'
 import Playlists from './Playlists'
@@ -70,7 +72,8 @@ export default class MeekaPlayer extends Component {
             searchResultsScrollToIndex:{},
             tags : {},
             renderedTags:null,
-            errorCount:0
+            errorCount:0,
+            forceHideVideo: false,
         };
         // bind model manipulation function in from model manager
         this.functions={};
@@ -88,6 +91,8 @@ export default class MeekaPlayer extends Component {
        // console.log([this._player]);
         //this.props.setPlayer(this._player);
        // let that = this;
+        this.setState({redirect:null})
+        // load tags
         this.functions.filterTags();
         //this.functions.loadPlaylists();
         //this.functions.setSearchFilter(this.props.searchFilter+' ');
@@ -111,6 +116,7 @@ export default class MeekaPlayer extends Component {
     componentDidUpdate(oldProps) {
         //this.props
         let that = this
+        
          //console.log('UPDATE MEEKAPLAYER',this.props,oldProps,this.props.user,oldProps.user);
          let userName = this.props.user && this.props.user.hasOwnProperty('username') ? this.props.user.username : null;
          let oldUserName = oldProps.user && oldProps.user.hasOwnProperty('username') ? oldProps.user.username : null;
@@ -131,9 +137,7 @@ export default class MeekaPlayer extends Component {
                      }
                  }
              });
-             
-        
-         }
+        }
     };
    
    
@@ -156,6 +160,7 @@ export default class MeekaPlayer extends Component {
         options.onScroll = this.props.onScroll;
         options.hideHeader = this.props.hideHeader;
         options.apiUrl = this.props.apiUrl;
+        options.youTubeApiKey = this.props.youTubeApiKey;
         //console.log(options);
        // let playControls=null;
         //if (this.props.currentPlaylist >= 0 && this.props.playlists.length > this.props.currentPlaylist && this.props.playlists[this.props.currentPlaylist].items.length > 0) {
@@ -164,12 +169,26 @@ export default class MeekaPlayer extends Component {
         let currentUrl=null;
         let currentTrack=options.getCurrentTrack();
         if (currentTrack && currentTrack.url) {
-            currentUrl = currentTrack.url;
+			if (currentTrack.url.startsWith('http://') || currentTrack.url.startsWith('https://')) {
+				currentUrl = currentTrack.url
+			} else {
+				let code = this.props.user && this.props.user.token ? this.props.user.token.access_token : '';
+				currentUrl = this.props.apiUrl + currentTrack.url ;
+				//+ '&access_token='+code;				
+			}
         } 
         let trackType='audio';
         if (currentTrack && currentTrack.type) {
             trackType = currentTrack.type;
         } 
+        if (currentTrack && currentTrack.url && (currentTrack.url.indexOf('youtube.com') !== -1 || currentTrack.url.indexOf('youtu.be') !== -1)) {
+			trackType = 'youtube'
+		}
+        if (currentTrack && currentTrack.url && (currentTrack.url.indexOf('vimeo.com') !== -1 || currentTrack.url.indexOf('youtu.be') !== -1)) {
+			trackType = 'vimeo'
+		}
+        // height, width, 
+        // visibility - if video or youtube or vimeo
         
         let wrapperTag="media-wrapper media-wrapper-"+trackType;
         let autoPlay="";
@@ -184,14 +203,16 @@ export default class MeekaPlayer extends Component {
         
         
         //const playerBlockTemplate = withMediaProps(function(props) {
-           //return <div className={wrapperTag} onClick={options.showPlayControls} style={{visibility:props.media.isPlaying?'visible':'hidden'}} >
+           //return <div className={wrapperTag} onClick={options.showPlayControls} style={{visibility:props.medthis._player.ia.isPlaying?'visible':'hidden'}} >
                     //<Player style={{height:'100%',width:'100%'}} height="800px" src={currentUrl} autoPlay={autoPlay} className="media-player" onPlay={options.onPlay} onPause={this.onPause} onError={options.onError} onEnded={options.onEnded} onStalled={this.onStalled} onProgress={this.onProgress} onTimeUpdate={options.onTimeUpdate} style={playerStyle} />
                 //</div>;
         //});
         //let playerBlock = [new playerBlockTemplate()];
         
         
-       
+       if (this.state.redirect && this.state.redirect.length > 0) {
+			return <Redirect to={this.state.redirect} />
+		}
         
         //let playerBlock = 
         return <div style={{width:'100%'}}>
@@ -205,25 +226,23 @@ export default class MeekaPlayer extends Component {
             <PropsRoute {...options} path="/meeka/history" component={Search} />
             <PropsRoute {...options} path="/meeka/fresh" component={Search} />
             <PropsRoute {...options} path="/meeka/youtube" component={YoutubeSearcher} />
-            <PropsRoute {...options} path="/meeka/fma" component={FmaSearcher} />
-            <PropsRoute {...options} path="/meeka/jamendo" component={JamendoSearcher} />
             <PropsRoute {...options} path="/meeka/menu"  isLoggedIn={this.props.isLoggedIn} component={Menu}/>
             <PropsRoute {...options} path="/meeka/help" component={Help}/>
             <Media ref={this._player} >
                 { mediaProps => <div>
-                {!this.props.hideFooter && options.showingPlayControls && <PropsRoute {...options}   path="/"  component={PlayControls}  />}
-                {currentUrl &&  <div className={wrapperTag} onClick={options.showPlayControls} style={{visibility:mediaProps.isPlaying?'visible':'hidden'}} >
-                    <Player  height="800px" src={currentUrl} autoPlay={autoPlay} className="media-player" onPlay={options.onPlay} onPause={this.onPause} onError={options.onError} onEnded={options.onEnded} onStalled={this.onStalled} onProgress={this.onProgress} onTimeUpdate={options.onTimeUpdate} style={playerStyle} />
+				{!this.props.hideFooter && options.showingPlayControls && <PropsRoute {...options}   path="/"  component={PlayControls}  />}
+                {currentUrl &&  <div className={wrapperTag} onClick={options.showPlayControls} style={{visibility:(((trackType==="youtube") || (mediaProps.isPlaying)) && trackType!="audio" && !this.state.forceHideVideo)?'visible':'hidden',display:'block'}} >
+					<Player height="800px" vendor={trackType} src={currentUrl} autoPlay={autoPlay} className="media-player" onPlay={options.onPlay} onPause={this.onPause} onError={options.onError} onEnded={options.onEnded} onStalled={this.onStalled} onProgress={this.onProgress} onTimeUpdate={options.onTimeUpdate} style={playerStyle} />
                 </div>}
                 </div> }
            </Media>
-           
-        
         </div>
     };
 }
 //            <PropsRoute {...this.props} path="/meeka/youtube" component={YouTubeSearch}/>
-
+ //<PropsRoute {...options} path="/meeka/fma" component={FmaSearcher} />
+            //<PropsRoute {...options} path="/meeka/jamendo" component={JamendoSearcher} />
+           
 //{mediaProps => (
           //<div
             //className="media"

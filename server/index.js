@@ -21,11 +21,20 @@ var authenticate = require('react-express-oauth-login-system/authenticate');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.all('*', function (req, res, next) {
+  console.log(['SERVER REQUEST',req.url,req.query,req.body])
+  next() // pass control to the next handler
+});
 
 //app.use(flash());
 //app.use(session({ secret: 'board GOAT' , cookie: { secure: true }}));
 //app.use(passport.initialize());
 //app.use(passport.session());
+
+process.on('unhandledRejection', (reason, p) => {
+    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    // application specific logging, throwing an error, or other logic here
+});
 
 var router = express.Router();
 
@@ -57,4 +66,4 @@ let port='443'
 var webServer = https.createServer(options, app).listen(port, function(){
   console.log("Express server listening on port " + port);
 });
-
+webServer.setTimeout(2000);

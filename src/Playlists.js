@@ -92,7 +92,7 @@ export default class Playlists extends Component {
         
         
         //item.userId = (this.props.user && this.props.user._id && this.props.user._id.length > 0) ? this.props.user._id : '';
-        //this.props.postData('/saveplaylist',item).then(function() {
+        //this.props.postData(that.props.apiUrl+'/saveplaylist',item).then(function() {
             //let final = that.props.playlists;
             //final.push(item);
             //that.props.setPlaylists(final);

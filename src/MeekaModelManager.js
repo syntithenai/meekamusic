@@ -3,7 +3,19 @@ import {debounce} from 'throttle-debounce';
 //import samplePlaylists from './sample_playlists';
  
 export default {
-  
+	
+	redirectTo(url) {
+		let that = this;
+		console.log(['REDIR',url])
+        //let lastPath = localStorage.get('lastPath')
+        //if (false && lastPath && lastPath.length > 0) {
+		  //localStorage.set('lastPath',null);	
+		  //window.location= lastPath;
+		//} else {
+			window.location = url;
+		//}
+	},
+ 
 	fetchData: function (url = ``) {
 		let that = this;
       // Default options are marked with *
@@ -11,15 +23,28 @@ export default {
                 "Content-Type": "application/json; charset=utf-8",
         }
         if (that.props && that.props.user && that.props.user.token)       headers['Authorization'] = 'Bearer '+that.props.user.token.access_token 
-        return fetch(url, {
-            method: "GET", // *GET, POST, PUT, DELETE, etc.
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            headers: headers,
-        })
-        //.then(response => response.json())
-        //.catch(function(e) {
-            //console.log('');
-        //})
+        return new Promise(function(resolve,reject) {
+			fetch(url, {
+				method: "GET", // *GET, POST, PUT, DELETE, etc.
+				cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+				headers: headers,
+			})
+			.then(response => response.json())
+			.then(function(json) {
+				console.log('check auth fail',json)
+				if (json.error && json.error.code === 401) {
+					//console.log('auth fail')
+					localStorage.setItem('lastPath',window.location.pathname)
+					that.functions.redirectTo('/login/login')
+					//resolve([])
+					//window.location.reload()
+				}
+				resolve(json ? json : []);				
+			})
+			.catch(function(e) {
+				console.log('Failed to fetch data '+url);
+			})
+		})
         //; // parses response to JSON
     },
 
@@ -30,21 +55,33 @@ export default {
                 "Content-Type": "application/json; charset=utf-8",
         }
         if (that.props && that.props.user && that.props.user.token)       headers['Authorization'] = 'Bearer '+that.props.user.token.access_token 
+         
                   
-        return fetch(url, {
-            method: "POST", // *GET, POST, PUT, DELETE, etc.
-            mode: "cors", // no-cors, cors, *same-origin
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, same-origin, *omit
-            headers: headers,
-            redirect: "follow", // manual, *follow, error
-            referrer: "no-referrer", // no-referrer, *client
-            body: JSON.stringify(data), // body data type must match "Content-Type" header
-        })
-        //.then(response => response.json())
-        //.catch(function(e) {
-            //console.log('');
-        //})
+        return new Promise(function(resolve,reject) {
+			fetch(url, {
+				method: "POST", // *GET, POST, PUT, DELETE, etc.
+				mode: "cors", // no-cors, cors, *same-origin
+				cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+				credentials: "same-origin", // include, same-origin, *omit
+				headers: headers,
+				redirect: "follow", // manual, *follow, error
+				referrer: "no-referrer", // no-referrer, *client
+				body: JSON.stringify(data), // body data type must match "Content-Type" header
+			})
+			.then(response => response.json())
+			.then(function(json) {
+				console.log('check auth fail')
+				if (json.error && json.error.code === 401) {
+					localStorage.setItem('lastPath',window.location.pathname)
+					that.functions.redirectTo('/login/login')
+					//console.log('auth fail')
+					//window.location.reload()
+				}
+				resolve(json);				
+			}).catch(function(e) {
+				console.log(['failed to post data',url,data]);
+			})
+		})	
         //; // parses response to JSON
     },
     
@@ -72,8 +109,8 @@ export default {
                 that.functions.onError();
             }
             that.setState({isPlaying:true});
-            if (that.props.user) that.functions.postData('/saveplayer',{userId:that.props.user._id,playlistId:that.state.playlistId,isPlaying:'true'});
-            
+            if (that.props.user) that.functions.postData(that.props.apiUrl+'/saveplayer',{userId:that.props.user._id,playlistId:that.state.playlistId,isPlaying:'true'});
+            that.setState({forceHideVideo:false});
         }
         
     },
@@ -96,10 +133,9 @@ export default {
                 });
                 ;
             } catch (e) {}
-            that.setState({isPlaying:false});
+            that.setState({isPlaying:false, forceHideVideo:true});
                    // that.functions.clearErrors();
-            if (that.props.user) that.functions.postData('/saveplayer',{userId:that.props.user._id,playlistId:that.state.playlistId,isPlaying:'false'});
-           
+            if (that.props.user) that.functions.postData(that.props.apiUrl+'/saveplayer',{userId:that.props.user._id,playlistId:that.state.playlistId,isPlaying:'false'});
         }
     },
     
@@ -130,8 +166,8 @@ export default {
                     console.log(["PLAYPAUSE ERR",e]);
                 });
             } catch (e) {}
-            that.setState({isPlaying:!that._player.current.state.isPlaying});
-            if (that.props.user) that.functions.postData('/saveplayer',{userId:that.props.user._id,playlistId:that.state.playlistId,isPlaying:(!that._player.current.state.isPlaying ? 'true' : 'false')});
+            that.setState({isPlaying:!that._player.current.state.isPlaying, forceHideVideo:!that._player.current.state.isPlaying});
+            if (that.props.user) that.functions.postData(that.props.apiUrl+'/saveplayer',{userId:that.props.user._id,playlistId:that.state.playlistId,isPlaying:(!that._player.current.state.isPlaying ? 'true' : 'false')});
                   
         }
     },
@@ -142,9 +178,7 @@ export default {
         let userId = (this.props.user && this.props.user._id && this.props.user._id.length > 0) ? this.props.user._id : '';
         this.functions.startWaiting();
           return this.functions.fetchData(this.props.apiUrl+'/playlists?userId='+userId+'&rand='+(new Date().getTime()) )
-          .then(function(response) {
-              return response.json()
-          }).then(function(json) {
+          .then(function(json) {
               that.functions.stopWaiting();
               console.log((that.props.user && !isNaN(that.props.user.playlistId) ? that.props.user.playlistId : 0));
               //that.functions.setPlaylist((that.props.user && !isNaN(that.props.user.playlistId) ? that.props.user.playlistId : 0));
@@ -273,7 +307,7 @@ export default {
                 //,hideSearchResults:false
                 that.setState({expandedArtists:expandedArtists});   
                 //that.functions.saveMeekaToLocalStorage();             
-                if (that.props.user) that.functions.postData('/saveplayer',{userId:that.props.user._id,expandedArtists:expandedArtists});
+                if (that.props.user) that.functions.postData(that.props.apiUrl+'/saveplayer',{userId:that.props.user._id,expandedArtists:expandedArtists});
            // },500)
         }
     },
@@ -305,7 +339,7 @@ export default {
             //={_id:oldId,title:oldTitle,items:[]};
             this.setState({playlists:playlists});
             //this.functions.saveMeekaToLocalStorage();
-            this.functions.postData('/saveplaylist',{userId:userId,playlistId:oldId,items:[],currentTrack:0});
+            this.functions.postData(this.props.apiUrl+'/saveplaylist',{userId:userId,playlistId:oldId,items:[],currentTrack:0});
         }
     },
     
@@ -322,7 +356,7 @@ export default {
             this.setState({playlists:playlists});
             //this.functions.saveMeekaToLocalStorage();
             let p = new Promise(function(resolve,reject) {
-                that.functions.postData('/saveplaylist',{userId:userId,playlistId:newItem._id,items:newItem.items,title:newItem.title,currentTrack:0}).then(function() {
+                that.functions.postData(that.props.apiUrl+'/saveplaylist',{userId:userId,playlistId:newItem._id,items:newItem.items,title:newItem.title,currentTrack:0}).then(function() {
                     resolve(newId);
                 });
             });
@@ -348,7 +382,7 @@ export default {
             this.setState({playlists:playlists});
             //this.functions.saveMeekaToLocalStorage();
             //fetch('/deleteplaylist?userId='+userId+'&playlistId='+playlistId);
-            this.functions.postData('/deleteplaylist',{userId:userId,playlistId:playlistId});
+            this.functions.postData(this.props.apiUrl+'/deleteplaylist',{userId:userId,playlistId:playlistId});
            
         }
     },
@@ -373,7 +407,7 @@ export default {
                 playlists[playlistKey].currentTrack = currentTrack;
                 this.setState({playlists:playlists,currentPlaylist:playlistKey,currentTrack:currentTrack});
                 //this.functions.saveMeekaToLocalStorage();
-               if (this.props.user) this.functions.postData('/saveplayer',{userId:userId,playlistId:playlistId,isPlaying:(this.state.isPlaying ? 'true' : 'false')});
+               if (this.props.user) this.functions.postData(this.props.apiUrl+'/saveplayer',{userId:userId,playlistId:playlistId,isPlaying:(this.state.isPlaying ? 'true' : 'false')});
             }            
         }
     },
@@ -399,7 +433,7 @@ export default {
             playlists[playlistKey].currentTrack = nextTrack;
             this.setState({currentPlaylist:playlistKey,currentTrack:nextTrack,playlists:playlists});
             //fetch('/saveplaylist?userId='+userId+'&playlistId='+newItem._id+'&currentTrack='+nextTrack);
-            this.functions.postData('/saveplaylist',{userId:userId,playlistId:this.state.playlists[playlistKey]._id,currentTrack:nextTrack});
+            this.functions.postData(that.props.apiUrl+'/saveplaylist',{userId:userId,playlistId:this.state.playlists[playlistKey]._id,currentTrack:nextTrack});
             
            
             //this.functions.saveMeekaToLocalStorage();
@@ -432,11 +466,11 @@ export default {
             
             let nextTrack=parseInt(trackKey - 1,10);
             //console.log({currentPlaylist:playlistKey,currentTrack:nextTrack});
-             let playlists = this.state.playlists;
+            let playlists = this.state.playlists;
             playlists[playlistKey].currentTrack = nextTrack;
-           this.setState({currentPlaylist:playlistKey,currentTrack:nextTrack});
+            this.setState({currentPlaylist:playlistKey,currentTrack:nextTrack});
             //fetch('/saveplaylist?userId='+userId+'&playlistId='+newItem._id+'&currentTrack='+nextTrack);
-            this.functions.postData('/saveplaylist',{userId:userId,playlistId:this.state.playlists[playlistKey]._id,currentTrack:nextTrack});
+            this.functions.postData(that.props.apiUrl+'/saveplaylist',{userId:userId,playlistId:this.state.playlists[playlistKey]._id,currentTrack:nextTrack});
             //this.functions.saveMeekaToLocalStorage();
             if (isPlaying) {
                 setTimeout(function() {
@@ -455,7 +489,7 @@ export default {
             let playlists=this.state.playlists;
             //console.log(['ADD TRACK really ',track,playlistKey]);
             playlists[playlistKey].items.push(track);
-            this.functions.postData('/addtracktoplaylist',{userId:userId,playlistId:playlists[playlistKey]._id,item:track,trackKey:playlists.length - 1});
+            this.functions.postData(this.props.apiUrl+'/addtracktoplaylist',{userId:userId,playlistId:playlists[playlistKey]._id,item:track,trackKey:playlists.length - 1});
             //fetch('/saveplaylist?userId='+userId+'&playlistId='+newItem._id+'&tracks=['+playlists[playlistKey].items.join(",")+']');
             this.setState({playlists:playlists});
             //this.functions.saveMeekaToLocalStorage();
@@ -476,7 +510,7 @@ export default {
             this.setState({playlists:playlists});
             //this.functions.saveMeekaToLocalStorage();
             //fetch('/saveplaylist?userId='+userId+'&playlistId='+newItem._id+'&tracks=['+playlists[playlistKey].items.join(",")+']');
-            this.functions.postData('/addtrackstoplaylist',{userId:userId,playlistId:playlists[playlistKey]._id,items:tracks});
+            this.functions.postData(this.props.apiUrl+'/addtrackstoplaylist',{userId:userId,playlistId:playlists[playlistKey]._id,items:tracks});
         }
     },
     
@@ -493,13 +527,13 @@ export default {
             playlists[playlistKey].items.push(track);
             playlists[playlistKey].currentTrack = index;
             this.setState({playlists:playlists,currentPlaylist:playlistKey,currentTrack:index});
-            this.functions.postData('/startplaytrackonplaylist',{userId:userId,playlistId:playlists[playlistKey]._id,item:track});
+            this.functions.postData(this.props.apiUrl+'/startplaytrackonplaylist',{userId:userId,playlistId:playlists[playlistKey]._id,item:track});
             //fetch('/saveplaylist?userId='+userId+'&playlistId='+newItem._id+'&tracks=['+playlists[playlistKey].items.join(",")+']');
             //this.functions.saveMeekaToLocalStorage();
             let that=this;
             setTimeout(function() {
                 that.functions.play();
-                if (that.props.user) that.functions.postData('/saveplayer',{userId:that.props.user._id,playlistId:that.state.playlistId,isPlaying:'true'});
+                if (that.props.user) that.functions.postData(that.props.apiUrl+'/saveplayer',{userId:that.props.user._id,playlistId:that.state.playlistId,isPlaying:'true'});
             },1000)
             //window.location='/meeka/playlist';
             //playlists[playlistKey].length-1
@@ -515,7 +549,7 @@ export default {
             playlists[playlistKey].items.splice(trackKey,1);
             this.setState({playlists:playlists});
             console.log(['REMOVETRACK',{userId:userId,playlistId:playlists[playlistKey]._id,items:playlists[playlistKey].items}]) //this.functions.postData('/saveplaylist',{userId:userId,playlistId:playlists[playlistKey]._id,items:playlists[playlistKey].items});
-            //fetch('/saveplaylist?userId='+userId+'&playlistId='+newItem._id+'&tracks=['+playlists[playlistKey].items.join(",")+']');
+            //fetch(this.props.apiUrl+'/saveplaylist?userId='+userId+'&playlistId='+newItem._id+'&tracks=['+playlists[playlistKey].items.join(",")+']');
             //this.functions.saveMeekaToLocalStorage();
             //this.functions.play();
         }
@@ -531,7 +565,7 @@ export default {
             let playlists = this.state.playlists;
             playlists[playlistKey].currentTrack = trackKey;
             this.setState({playlists:playlists,currentPlaylist:playlistKey,currentTrack:trackKey});
-            this.functions.postData('/saveplaylist',{userId:userId,playlistId:this.state.playlists[playlistKey]._id,currentTrack:trackKey});
+            this.functions.postData(this.props.apiUrl+'/saveplaylist',{userId:userId,playlistId:this.state.playlists[playlistKey]._id,currentTrack:trackKey});
             //this.functions.saveMeekaToLocalStorage();
             //if (this.state.isPlaying) {
                 //this.functions.play();
@@ -548,7 +582,7 @@ export default {
             let playlists = this.state.playlists;
             playlists[playlistKey].currentTrack = trackKey;
             this.setState({playlists:playlists,currentPlaylist:playlistKey,currentTrack:trackKey});
-            this.functions.postData('/saveplaylist',{userId:userId,playlistId:this.state.playlists[playlistKey]._id,currentTrack:trackKey});
+            this.functions.postData(this.props.apiUrl+'/saveplaylist',{userId:userId,playlistId:this.state.playlists[playlistKey]._id,currentTrack:trackKey});
             this.functions.play();
             //this.functions.saveMeekaToLocalStorage();
             //if (this.state.isPlaying) {
@@ -568,7 +602,7 @@ export default {
         }
         // else {
             //let newDefault = {_id:'default',title:"default",items:[],userId:userId,currentTrack:0};
-            //this.functions.postData('/saveplaylist',{newDefault});
+            //this.functions.postData(this.props.apiUrl+'/saveplaylist',{newDefault});
             ////return null;
             //return newDefault;
         //}
@@ -584,17 +618,18 @@ export default {
     },
     
     toggleCurrentFavorite : function(userId) {
-        if (userId && userId.length > 0) {
+         console.log(['TOGGLE FAV',userId])
+         if (userId && userId.length > 0) {
             let playlists = this.state.playlists;
             let track = this.functions.getCurrentTrack();
             track.favoriteOf = track.favoriteOf ? track.favoriteOf : {}
             track.favoriteOf[userId] = !track.favoriteOf[userId];
             playlists[this.state.currentPlaylist].items[this.state.currentTrack] = track;
+            console.log(['TOGGLE set',track,playlists])
             // note mongosave in LikeButton
             this.setState({'playlists':playlists});
             
         }
-        
     },
     
     setPlayMode: function(mode) {
@@ -764,9 +799,7 @@ export default {
         let that = this;
         this.functions.startWaiting();
           this.functions.fetchData(this.props.apiUrl+'/tags?search='+(title ? title.toLowerCase() : '') )
-          .then(function(response) {
-            return response.json()
-          }).then(function(json) {
+          .then(function(json) {
               ////console.log(['SET TAGS', json])
               let newTags=[];
               for (let a in json) {

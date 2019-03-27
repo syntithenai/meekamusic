@@ -13,6 +13,15 @@ export default class FmaSearch extends SearchComponent {
 		super(props);
 		this.search = this.search.bind(this);
 	}
+	
+	componentDidMount() {
+        SearchComponent.prototype.componentDidMount.call(this);
+    };
+    
+   	componentDidUpdate(props) {
+        SearchComponent.prototype.componentDidUpdate.call(this,props);
+    };
+ componentDidUpdate
     
     search(filter,filterTag,limit) {
         limit=10;
@@ -24,10 +33,7 @@ export default class FmaSearch extends SearchComponent {
      // console.log(['FMA SEARCH'])
       
         this.props.fetchData(this.props.apiUrl+'/fmasearchproxy?filter='+filter+'&limit='+limit)
-        .then(function(response) {
-          //  console.log(['got response', response])
-            return response.json()
-        }).then(function(json) {
+        .then(function(json) {
             let final=[];
            // console.log(json.aRows);
             let promises=[];
@@ -46,21 +52,21 @@ export default class FmaSearch extends SearchComponent {
                             
                         let id=line.substring(idStart+1,idEnd);
                         //console.log(idStart,idEnd,id,artistStart,artistEnd,artist,title);
-                        let record={fmaId: id,title:title,artist:artist,url:'https://freemusicarchive.org/api/get/tracks.json/download?track_id='+id};
+                        let record={fmaId: id,title:title,artist:artist};
                         final.push(record);    
+                        //,url:'https://freemusicarchive.org/api/get/tracks.json/download?track_id='+id
                         if (id && parseInt(id,10) > 0) {
                             promises.push( new Promise(function(resolve,reject) {
                                 setTimeout(function() {
                         
                                     that.props.fetchData(that.props.apiUrl+'/fmadetailsproxy?id='+id)
-                                    .then(function(response) {
-                                        return response.json()
-                                    }).then(function(json) {
+                                    .then(function(json) {
                                       // console.log(['got details', json.dataset[0]])
                                        if (json.dataset && json.dataset.length > 0) {
                                            record.album = json.dataset[0].album_title;
                                            record.albumart = json.dataset[0].track_image_file;
                                            record.fmaUrl = json.dataset[0].track_url;
+                                           record.url = json.dataset[0].track_url+'/download';
                                            record._id = new ObjectId().toString();
                                            let genres=[];
                                            if (json.dataset[0].track_genres) {
@@ -90,12 +96,12 @@ export default class FmaSearch extends SearchComponent {
                 }
                 // initial results
                 that.props.setSearchResults('fma',final);
-                that.props.stopWaiting();
                 // detailed results
                 Promise.all(promises).then(function(final) {
                     //console.log('FINAL');
                     //console.log(final);
-                    that.props.setSearchResults('fma',final);
+                    that.props.stopWaiting();
+					that.props.setSearchResults('fma',final);
                     
                 });       
             }

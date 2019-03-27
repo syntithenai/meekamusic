@@ -55,9 +55,7 @@ export default class Tags extends Component {
         //let that = this;
         //this.props.startWaiting();
           //this.props.fetchData(this.props.apiUrl+'/tags?search='+(title ? title.toLowerCase() : '') )
-          //.then(function(response) {
-            //return response.json()
-          //}).then(function(json) {
+          //.then(function(json) {
               //////console.log(['SET TAGS', json])
               //let newTags=[];
               //for (let a in json) {

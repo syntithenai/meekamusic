@@ -88,10 +88,6 @@ export default class Menu extends Component {
                 <div className='item'>
                     <Link to={youtubeLink}   ><button className='btn' style={buttonStyle} ><YoutubeButton  size={size}/> Youtube</button></Link>
                     
-                    <Link to={jamendoLink}   ><button className='btn'  style={buttonStyle} ><img alt="Jamendo" src='/jamendo.png' style={{height:'2.2em'}} /> Jamendo</button></Link>
-                    
-                    <Link to={fmaLink}   ><button className='btn'  style={buttonStyle} ><FMAButton  size={size} /> FMA</button></Link>
-                    
                 </div>
                 
             </div>
@@ -102,6 +98,10 @@ export default class Menu extends Component {
                     //<Link to="/meeka/search/video"   ><button className='btn' style={buttonStyle} ><VideoButton  size={size}/> Video</button></Link>
 
 
+                    //<Link to={jamendoLink}   ><button className='btn'  style={buttonStyle} ><img alt="Jamendo" src='/jamendo.png' style={{height:'2.2em'}} /> Jamendo</button></Link>
+                    
+                    //<Link to={fmaLink}   ><button className='btn'  style={buttonStyle} ><FMAButton  size={size} /> FMA</button></Link>
+                    
 //
 
 

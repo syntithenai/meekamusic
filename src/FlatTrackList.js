@@ -88,7 +88,7 @@ export default class FlatTrackList extends Component {
             //}
         //});
         
-        console.log(['RENder',this.props.items]);
+        //console.log(['RENder',this.props.items]);
         // RENDER
         if (this.props.items) {
             let finalList=null
@@ -136,7 +136,7 @@ export default class FlatTrackList extends Component {
                         //}
                         
                         //let albumSearchLink = "/meeka/search/";
-                        return <div className='list-group-item' key={item._id} >
+                        return <div className='list-group-item' key={key} >
                             <span style={{float:'left',width:'70%',marginRight:'1em'}}  ><span style={{float:'left'}} >{item.title}</span>&nbsp;&nbsp;&nbsp;{renderedTags}<br/>{artist} {album}</span>
                             <button className='btn btn-info' style={{marginRight:'0.3em',marginLeft:'0.3em',float:'right'}} onClick={() => that.props.enqueueTrack(item,that.props.currentPlaylist)}  >Add</button>&nbsp;
                             <button className='btn btn-info' style={{float:'right'}} onClick={() => that.props.playTrack(item,that.props.currentPlaylist)}   >Play</button>

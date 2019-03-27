@@ -12,6 +12,12 @@ import SearchComponent from './SearchComponent'
  export default class HistorySearch extends SearchComponent {
     
     
+    
+    componentDidMount() {
+        SearchComponent.prototype.componentDidMount.call(this);
+    };
+ 
+    
         search(filter,filterTag,limit) {
         let endPoint = this.props.endPoint;
         let that = this;
@@ -33,11 +39,7 @@ import SearchComponent from './SearchComponent'
             //    console.log(['LOCAL SERCH-' ,filter,filterTag]);
                 this.props.startWaiting();
                 this.props.fetchData(this.props.apiUrl+"/"+endPoint+'?userId='+userId+'&search='+filter+'&tag='+filterTag+'&limit='+limit)
-                .then(function(response) {
-                    //console.log(['got response', response])
-                    // iterate items, building list of artists and populating albumMatch and trackMatch arrays
-                    return response.json()
-                }).then(function(json) {
+                .then(function(json) {
                     // collate by day
                     let byDay={}
                    // console.log(['LOCALSEARCH groopu by day',json]);

@@ -85,15 +85,12 @@ export default class LikeButton extends Component {
         let userId = (this.props.user && this.props.user._id && this.props.user._id.length > 0) ? this.props.user._id : '';
         let currentTrack = this.props.currentTrack;
         let trackId = (currentTrack && currentTrack._id && currentTrack._id.length > 0) ? currentTrack._id : '';
-        //console.log(['TOGGLE FAVE',userId,trackId]);
+        console.log(['TOGGLE FAVE',userId,trackId]);
         //currentTrack.favoriteOf[userId] = !currentTrack.favoriteOf[userId]; 
         
         this.props.fetchData(this.props.apiUrl+'/togglefavorite?userId='+userId+'&trackId='+trackId)
-        .then(function(response) {
-            return response.text()
-        })
         .then(function(res) {
-            //console.log(['TOGGLE FAVE res',res]);
+            console.log(['TOGGLE FAVE res',res]);
             //that.setState({isFavorite:(res==="yes" ? true : false)});
             that.props.toggleCurrentFavorite(userId);
         });

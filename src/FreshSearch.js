@@ -17,11 +17,11 @@ export default class FreshSearch extends LibrarySearch {
     
     componentDidMount() {
         // redirect to youtube search if not logged in
-        if (this.props.isLoggedIn()) {
+       // if (this.props.isLoggedIn()) {
             SearchComponent.prototype.componentDidMount.call(this);
-        } else {
-            this.props.history.push("/meeka/jamendo");
-        }
+        //} else {
+            //this.props.history.push("/meeka/jamendo");
+        //}
     };
     
     

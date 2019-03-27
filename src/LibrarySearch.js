@@ -16,12 +16,7 @@ export default class LibrarySearch extends SearchComponent {
     };
     
     componentDidMount() {
-        // redirect to youtube search if not logged in
-        if (this.props.isLoggedIn()) {
-            SearchComponent.prototype.componentDidMount.call(this);
-        } else {
-            this.props.history.push("/meeka/jamendo");
-        }
+        SearchComponent.prototype.componentDidMount.call(this);
     };
     
    
@@ -38,7 +33,12 @@ export default class LibrarySearch extends SearchComponent {
         
         if ((this.props.hasOwnProperty('searchFilter') && this.props.searchFilter.trim().length > 1) || (this.props.hasOwnProperty('searchFilterTag') && this.props.searchFilterTag.length > 0)) {
             let    list = this.props.searchResults && Array.isArray(this.props.searchResults.local) ? this.props.searchResults.local : [];
-            //}
+            //if (endPoint==="fresh") {
+			//extraFilter = "&tags="+(this.props.user && this.props.user.tags ? this.props.user.tags : '');
+			//if (this.props.user && this.props.user.expandedArtists) {
+				//extraFilter += "&filterArtists="+Object.keys(this.props.user.expandedArtists).join(",");
+			//}
+		//}//}
             let paddingTop='0em';//Utils.isMobile() ? '5em' : '3em';
             //if (this.props.hideHeader) paddingTop='0em'; 
             //style={{paddingTop:paddingTop}}

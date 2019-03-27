@@ -71,7 +71,7 @@ export default withMediaProps(class PlayControls extends Component {
               <div className='titlebar' onClick={(e) => this.clickProgress(e)} style={{height: '0.8em',width:'100%', backgroundColor:'black',color:'white', marginBottom: '1.2em'}} >{currentTrack ? currentTrack.artist : ''} - {currentTrack ? currentTrack.title : ''} </div>
               
               <div className='meekaButtons' style={{paddingBottom: '0.2em'}} >
-                  <LikeButton toggleCurrentFavorite={this.props.toggleCurrentFavorite} currentTrack={currentTrack} user={this.props.user} />
+                  <LikeButton apiUrl={this.props.apiUrl} fetchData={this.props.fetchData} toggleCurrentFavorite={this.props.toggleCurrentFavorite} currentTrack={currentTrack} user={this.props.user} />
                   <button className='btn' style={{marginLeft:'0.7em', marginTop:'0.8em'}} ><PreviousButton onClick={this.props.previousTrack} size={buttonSize} /></button>
                   <button  className='btn'  onClick={this.props.togglePlayback} style={{marginLeft:'0.7em',marginRight:'0.7em'}} >
                     {!this.props.media.isPlaying && <PlayButton size={buttonSize+playBoost}/>}

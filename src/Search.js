@@ -53,7 +53,7 @@ export default class Search extends Component {
     
     componentDidMount() {
         // SET SEARCH FILTERS FROM URL
-        //console.log(['SESARCHDIDMOUNT']);
+        console.log(['SESARCHDIDMOUNT']);
             let queryParts=this.extractQueryParts();
           //  console.log([queryParts]);
             this.props.setSearchFilter(queryParts.searchFilter);
@@ -198,6 +198,7 @@ export default class Search extends Component {
                     &nbsp;
                     
                     <Link style={{marginLeft:'0px',paddingLeft:'0px',textAlign:'left'}} to={"/meeka/fresh"+searchLink}  ><button  style={style.fresh}  className='btn'><FreshButton size={size} /><span className="d-none d-md-inline"> Fresh</span></button></Link>&nbsp;
+
                     
                     <span style={{textAlign:'left'}}>
                     <SearchButton size={20} className="d-none d-md-inline" style={{marginTop:'0.4em',marginBottom:'0.4em',marginLeft:'0.4em'}}/>&nbsp;

@@ -24,41 +24,44 @@ var connect = function() {
 connect();
 
 var search = function(searchType,query,cb) {
-   //console.log(['SEARCH ',searchType,query]);
+	let startTime = new Date().getTime();
+   console.log(['SEARCH ',searchType,query]);
     let collection = searchType;
     let extraFilter = null;
     let aggregateSearch = false;
     
     if (!db) connect();
     let criteria=[];
-    //let limit=300;
     let limit=500;
     let skip=0;
+    // TODO RESTORE THIS
     //if (query.limit && query.limit > 0) {
         //limit = parseInt(query.limit,10);
     //}
     if (query.skip && query.skip > 0) {
         skip = parseInt(query.skip,10);
     }
-   // console.log(query);
-   //.replace('"',"").replace("'","")
+    // BUILD SEARCH CRITERIA
     let searchFor = query.search ? query.search : ''; //.trim()
     if (searchFor.length > 0) {
         let searchForParts = searchFor.split(" ");
-        for (let spk in searchForParts) {
-            let val = searchForParts[spk]; //.trim();
-           // console.log(['SEARCHPART',val]);
-            if (val.length > 0) {
-                criteria.push({$or: [{title:{$regex:val,$options:'i'}},{album:{$regex:val,$options:'i'}},{albumArtist:{$regex:val,$options:'i'}},{artist:{$regex:val,$options:'i'}},{genre:{$regex:val,$options:'i'}}]});
-            }
+        // REGEXP FOR PI VERSION
+        //for (let spk in searchForParts) {
+            //let val = searchForParts[spk]; //.trim();
+           //// console.log(['SEARCHPART',val]);
+            //if (val.length > 0) {
+                //criteria.push({$or: [{title:{$regex:val,$options:'i'}},{album:{$regex:val,$options:'i'}},{albumArtist:{$regex:val,$options:'i'}},{artist:{$regex:val,$options:'i'}},{genre:{$regex:val,$options:'i'}}]});
+            //}
             
-        }
-        //criteria.push({$text: {$search: '"' + searchForParts.join('","')+'"'}});
+        //}
+        // INDEXES FOR INTEL VERSION
+        criteria.push({$text: {$search: searchForParts.join(' ')}});
     }
     let searchForTag = query.tag ? query.tag.trim() : '';
     if (searchForTag.length > 0) {
-        //criteria.push({genre: new RegExp(searchForTag, 'i')});
-        criteria.push({$or:[{genre: new RegExp('^'+searchForTag+",", 'i')},{genre: new RegExp(","+searchForTag+",", 'i')},{genre: new RegExp(","+searchForTag+"$", 'i')},{genre:{$eq:searchForTag}}]});
+        ////criteria.push({genre: new RegExp(searchForTag, 'i')});
+        //criteria.push({$or:[{genre: new RegExp('^'+searchForTag+",", 'i')},{genre: new RegExp(","+searchForTag+",", 'i')},{genre: new RegExp(","+searchForTag+"$", 'i')},{genre:{$eq:searchForTag}}]});
+        criteria.push({genre:[searchForTag]})
     }
     if (query.filterArtists && query.filterArtists.length > 0) {
         let artistsToFilter = query.filterArtists.split(",");
@@ -122,22 +125,22 @@ var search = function(searchType,query,cb) {
         let searchForTags = query.tags ? query.tags.trim().split(",") : [];
         if (searchForTags.length > 0) {
             searchForTags.map(function(searchForTag,key) {
-                genreCriteria.push({$or:[{genre: new RegExp('^'+searchForTag+",", 'i')},{genre: new RegExp(","+searchForTag+",", 'i')},{genre: new RegExp(","+searchForTag+"$", 'i')},{genre:{$eq:searchForTag}}]});
+                //genreCriteria.push({$or:[{genre: new RegExp('^'+searchForTag+",", 'i')},{genre: new RegExp(","+searchForTag+",", 'i')},{genre: new RegExp(","+searchForTag+"$", 'i')},{genre:{$eq:searchForTag}}]});
+                genreCriteria.push({genre:[searchForTag]});
             });
             //criteria.push({genre: new RegExp(searchForTag, 'i')});
             criteria.push({$or:genreCriteria});
                 
         }
-     //   console.log(['agg qury',JSON.stringify(criteria)]);
      }
-
+     
 
     let forQuery=null;
     if (criteria.length > 0) {
         forQuery={$and:criteria};
     }
-    //if (searchFor.length > 0 || searchForTag.length > 0) {
-       // console.log([query,JSON.stringify(forQuery),limit,skip,searchFor]);
+   console.log(['FINAL QUERY',JSON.stringify(forQuery)]);
+    // FINALLY DO THE DATABASE QUERY
     if (skipSearch) {
         cb([]);
     } else if (!aggregateSearch)  {
@@ -148,26 +151,34 @@ var search = function(searchType,query,cb) {
 //            .project({score: {$meta: "textScore"}})
             .sort(sortConfig)
             .toArray(function(err, results) {
-               // console.log('SEARCH RESULTS')
-                //console.log(err);
-                //console.log(results.length);
-                if (err) console.log(err);
-                //console.log('SEARCH RESULTS')
-                cb(results);
+				let endTime = new Date().getTime();
+               console.log('SEARCH RESULTS in '+(endTime - startTime)+' ms')
+                if (err) {
+					console.log(err);
+					cb([])
+				} else {
+					cb(results);
+				}
             });
      } else {
          db.collection(collection)
             .find(forQuery)
             .limit(limit*5)
             .toArray(function(err, results) {
-               // console.log('SEARCH RESULTS')
+            // console.log('SEARCH RESULTS')
                 //console.log(err);
                 console.log(results.length);
-                if (err) console.log(err);
-                //console.log('SEARCH RESULTS')
-                results =getRandom(results,Math.min(limit,results.length));
-                console.log(results.length);
-                cb(results);
+                if (err) {
+					console.log(err);
+					cb([])
+				} else {
+				//console.log('SEARCH RESULTS')
+					results =getRandom(results,Math.min(limit,results.length));
+					console.log(results.length);
+					let endTime = new Date().getTime();
+					console.log('AGG SEARCH RESULTS in '+(endTime - startTime)+' ms')
+					cb(results);
+				}
             });
          // MONGO 3.2  +
          //db.collection(collection).aggregate([
@@ -211,8 +222,12 @@ var searchTags = function(query,cb) {
         criteria={};
     }
     return db.collection('tags').find(criteria).sort({tally:-1}).limit(60).toArray(function(err, results) {
-            if (err) console.log(err);
-            cb(results);
+            if (err) {
+				console.log(err);
+				cb([])
+			} else {
+				cb(results);
+			}
         });     
 }
 
@@ -221,8 +236,12 @@ var searchTracksByArtist = function (query,cb) {
 if (query && query.search && query.search.trim().length > 0) {
     //{artistKey: {$eq:query.search}},
         return db.collection('tracks').find({$or:[{groupByKey: {$eq:query.search}}]}).toArray(function(err, results) {
-            if (err) console.log(err);
-            cb(results);
+            if (err) {
+				console.log(err);
+				cb([])
+			} else {
+				cb(results);
+			}
         });     
     } else {
         cb([]);
@@ -236,9 +255,12 @@ var searchTracksByArtistAndAlbum = function (artist,album,cb) {
         let query = {$and:[{albumKey: {$eq:album}}, {$or:[{artistKey: {$eq:artist}},{groupByKey: {$eq:artist}}]}]};
        // console.log(JSON.stringify(query));
         return db.collection('tracks').find(query).toArray(function(err, results) {
-            if (err) console.log(err);
-            //console.log(results);
-            cb(results);
+            if (err) {
+				console.log(err);
+				cb([])
+			} else {
+				cb(results);
+			}
         });     
      } else {
         cb([]);
@@ -250,13 +272,18 @@ var searchTracksByTag = function(query,cb) {
    // console.log('SEARCH TAGS'+query.search);
     if (query && query.tag && query.tag.trim().length > 0) {
         // TODO NEED AN INDEX TO SEARCH HERE
-        let criteria ={genre: new RegExp(query.tag.trim(), 'i')};
+        let criteria ={genre: [query.tag.trim().toLowerCase()]};
         if (query.search) {
-            criteria = {$and:[{$or:[{title: new RegExp(query.search.trim(), 'i')},{artist: new RegExp(query.search.trim(), 'i')},{album: new RegExp(query.search.trim(), 'i')}]},criteria]}
+            criteria.push({$text: {$search: query.search}});
+            //criteria = {$and:[{$or:[{title: new RegExp(query.search.trim(), 'i')},{artist: new RegExp(query.search.trim(), 'i')},{album: new RegExp(query.search.trim(), 'i')}]},criteria]}
         }
         return db.collection('tracks').find(criteria).toArray(function(err, results) {
-            if (err) console.log(err);
-            cb(results);
+            if (err) {
+				console.log(err);
+				cb([])
+			} else {
+				cb(results);
+			}
         });     
     } else {
         cb([]);
@@ -266,8 +293,12 @@ var searchTracksByTag = function(query,cb) {
 var artists = function(query,cb) {
     if (!db) connect();
     return db.collection('artists').find({}).sort({title:1}).toArray(function(err, results) {
-            if (err) console.log(err);
-            cb(results);
+            if (err) {
+				console.log(err);
+				cb([])
+			} else {
+				cb(results);
+			}
     });     
 }
 
@@ -278,7 +309,6 @@ var recreateIndexes = function(query,cb) {
         title: "text",
         artist: "text",
         album: "text",
-        genre: "text"
     });   
     cb([]);   
 }
@@ -287,9 +317,12 @@ var albumArt = function (query,cb) {
     //console.log(['ALBUMART',query.album,query.artist]);
 if (query && query.artist && query.artist.trim().length > 0 && query && query.album && query.album.trim().length > 0) {
         return db.collection('albumart').find({_id: query.artist+query.album}).toArray(function(err, results) {
-            if (err) console.log(err);
-      //      console.log(['GOT ALBUMART']);
-            cb(results);
+            if (err) {
+				console.log(err);
+				cb([])
+			} else {
+				cb(results);
+			}
         });     
     } else {
         cb([]);
@@ -318,7 +351,8 @@ var stream = function(query,req,res) {
                         let stat = fs.statSync(results[0].path);
                         returnMedia(results[0].path,req,res,stat,results[0].mime);
                     } catch (e) {
-                        console.log(['ERROR STREAMING',e]);
+						console.log(['ERROR STREAMING',e]);
+						res.send('')
                     }
                     //readcontent(results[0].path, serveWithRanges, req, res);
                     //var fs = require('fs');
@@ -343,6 +377,8 @@ var stream = function(query,req,res) {
                     
                     //request.get(results[0].url).pipe(res);
                     //cb(results[0]);
+                } else {
+						res.send('')
                 }
                 
             });
@@ -391,30 +427,32 @@ var stream = function(query,req,res) {
 
 var toggleFavorite = function(query,cb) {
     let criteria=[];
-   // console.log('TOGGLE FAV');
+    console.log('TOGGLE FAV');
     if (query.userId && query.userId.length > 0 && query.trackId && query.trackId.length > 0) {
         let childCriteria = {};
         childCriteria['favoriteOf.'+query.userId] = true;
         criteria.push(childCriteria);
         criteria.push({_id:ObjectId(query.trackId)});
-       // console.log(['TOGGLE FAV REAL',criteria]);
+        console.log(['TOGGLE FAV REAL',criteria]);
         db.collection('tracks')
         .find({$and:criteria})
         .toArray(function(err, results) {
-            if (results.length > 0) {
+            if (err) {
+				cb({message:'error toggling favorite'});
+           } else  if (results && results.length > 0) {
                 // delete
-               // console.log('TOGGLE FAV del');
+                console.log('TOGGLE FAV del');
                 let newCriteria = {};
                 newCriteria['favoriteOf.'+query.userId] = false
                 db.collection('tracks').updateOne({_id:ObjectId(query.trackId)},{$set:newCriteria});
-                cb('no');
+                cb({status:'no'});
             } else {
                 // insert
+                console.log('TOGGLE FAV ins');
                 let newCriteria = {};
                 newCriteria['favoriteOf.'+query.userId] = true
                 db.collection('tracks').updateOne({_id:ObjectId(query.trackId)},{$set:newCriteria});
-                cb('yes');
-                
+                cb({status:'yes'});
             }
         })
     }
@@ -434,13 +472,17 @@ var isFavorite = function(query,cb) {
         db.collection('favorites')
         .find({$and:criteria})
         .toArray(function(err, results) {
-            if (err) console.log(err);
-            if (results.length > 0) {
-                cb('yes');
+            if (err) {
+				console.log(err);
+				cb({message:'failed to determine favorite status'});
+            } else if (results.length > 0) {
+                cb({result:'yes'});
             } else {
-                cb('no');
+                cb({result:'no'});
             }
         })
+    } else {
+		cb({message:'failed to determine favorite status'});
     }
 }
 
@@ -495,9 +537,9 @@ var logSeen = function(query,cb) {
                 
             });
         });
-    } else {
-        cb('');
     }
+        cb('');
+    
     
            //console.log('logged SEEN');
            //let setData = {};
@@ -525,7 +567,7 @@ var logSeen = function(query,cb) {
 }
 
 var savePlayer = function(query,cb) {
-   // console.log(['savePLayer',query]);
+   console.log(['savePLayer',query]);
     if (query.userId && query.userId.length > 0 ) {
         //console.log(['savePLayer reeally',query]);
         let setData = {};
@@ -535,11 +577,14 @@ var savePlayer = function(query,cb) {
         if (query.isPlaying === "false") setData.isPlaying = false;
         if (query.expandedArtists) setData.expandedArtists = query.expandedArtists;
         db.collection("users").updateOne({_id:ObjectId(query.userId)},{$set:setData}).then(function() {
-          //  console.log(['savePLayer updated',setData   ,query]);
-            cb('updated user pl');
-        });
+            console.log(['savePLayer updated',setData   ,query]);
+            cb({message:'updated user pl'});
+        }).catch(function(e) {
+			console.log(e);
+			cb({message:'noop'});
+		});
     } else {
-        cb([]);
+        cb({message:'noop'});
     }
 }
 
@@ -558,17 +603,23 @@ var savePlaylist = function(query,cb) {
             setData.userId = ObjectId(query.userId);
            // console.log(['savePL update',setData]);
             db.collection("playlists").updateOne({_id:ObjectId(query.playlistId)},{$set:setData},{upsert:true}).then(function() {
-                cb('update');
-            });
+                cb({message:'update'});
+            }).catch(function(e) {
+				console.log(e);
+				cb({message:'fail'});
+			});
         } else {
             // insert
           //  console.log(['savePL insert']);
             db.collection("playlists").insertOne({userId:ObjectId(query.userId),title:query.title,items:(query.items ? query.items : []),currentTrack:0}).then(function() {
-                cb('insert');
-            });;
+                cb({message:'insert'});
+            }).catch(function(e) {
+				console.log(e);
+				cb({message:'fail'});
+			});
         }
     } else {
-        cb('noop');
+        cb({message:'noop'});
     }
 }
 
@@ -585,15 +636,26 @@ var addTrackToPlaylist = function(query,cb) {
                         newPlaylistItems.splice(playlistKey,0,query.item);
                         db.collection("playlists").updateOne({_id:ObjectId(query.playlistId),userId:ObjectId(query.userId)},{$set:{items:newPlaylistItems}}).then(function() {
                             console.log('ADDED ITEM TO PLAYLIST at '+playlistKey);
+                            cb({message:'added to playlist'});
                         });
-                    }
-                });
-            }   
-        }
-    }
-    cb('invalidrequest');
+                    } else {
+						cb({message:'failed'});
+					}
+                }).catch(function(e) {
+					console.log(e);
+					cb({message:'fail'});
+				});
+            } else {
+				cb({message:'fail'});
+			}  
+        } else {
+			cb({message:'fail'});
+		} 
+    } else {
+		cb({message:'fail'});
+	} 
 }
-
+// TODO ENSURE CALLBACK FROM HERE ON
 var startPlayTrackOnPlaylist = function(query,cb) {
     //&& ((query.title && query.title.length > 0) || (query.items && query.items.length > 0) || (query.currentTrack && !isNaN(query.currentTrack) && query.currentTrack >= 0)) 
     if (query.userId && query.userId.length > 0 ) {
@@ -607,14 +669,25 @@ var startPlayTrackOnPlaylist = function(query,cb) {
                         newPlaylistItems.splice(playlistKey,0,query.item);
                         db.collection("playlists").updateOne({_id:ObjectId(query.playlistId),userId:ObjectId(query.userId)},{$set:{items:newPlaylistItems,currentTrack:(playlistKey + 1)}}).then(function() {
                           db.collection("users").updateOne({_id:ObjectId(query.userId)},{$set:{isPlaying:true}})  
-                            console.log('ADDED ITEM TO PLAYLIST at '+playlistKey);
-                        });
-                    }
+                          console.log('ADDED ITEM TO PLAYLIST at '+playlistKey);
+						  cb({message:'added item to playlist'});
+                        }).catch(function(e) {
+							console.log(e)
+							cb({message:'fail'})
+						})
+                    } else {
+						cb({message:'fail'})
+					} 
                 });
-            }   
-        }
-    }
-    cb('invalidrequest');
+            } else {
+				cb({message:'fail'})
+			}   
+        } else {
+			cb({message:'fail'});
+		} 
+    } else {
+		cb({message:'fail'});
+	} 
 }
 
 var addTracksToPlaylist = function(query,cb) {
@@ -630,13 +703,21 @@ var addTracksToPlaylist = function(query,cb) {
                         newPlaylistItems.splice(playlistKey,0,...query.items);
                         db.collection("playlists").updateOne({_id:ObjectId(query.playlistId),userId:ObjectId(query.userId)},{$set:{items:newPlaylistItems}}).then(function() {
                             console.log('ADDED ITEMs TO PLAYLIST at '+playlistKey);
+                            cb({message:'added item to playlist'});
                         });
-                    }
+                    } else {
+						cb({message:'fail'});
+					} 
                 });
-            }   
-        }
-    }
-    cb('invalidrequest');
+            } else {
+				cb({message:'fail'});
+			}    
+        } else {
+			cb({message:'fail'});
+		} 
+    } else {
+		cb({message:'fail'});
+	} 
 }
 
 var removeTrackFromPlaylist = function(query,cb) {
@@ -661,8 +742,15 @@ var removeTrackFromPlaylist = function(query,cb) {
 
 var deletePlaylist = function(query,cb) {
     if (query.playlistId && query.playlistId.length > 0 && query.userId && query.userId.length > 0) {
-        db.collection("playlists").deleteOne({_id:ObjectId(query.playlistId),userId:ObjectId(query.userId)});
-    }
+        db.collection("playlists").deleteOne({_id:ObjectId(query.playlistId),userId:ObjectId(query.userId)}).then(function() {
+			cb({message:'playlist deleted'})
+		}).catch(function(e) {
+			console.log(e);
+			cb({message:'fail'})
+		});
+    } else {
+		cb({message:'fail'})
+	}
 }
 
 var getPlaylist = function(query,cb) {
@@ -672,26 +760,27 @@ var getPlaylist = function(query,cb) {
         db.collection('playlists')
         .find({$and:criteria})
         .toArray(function(err, results) {
-            if (err) console.log(err);
-            let defaultPlaylist=null;
-            let defaultPlaylistKey=null;
-            let final= json && json.length > 0 ? json : JSON.parse(JSON.stringify(samplePlaylists)); 
-    
-            
-            if (results && results.length > 0) {
-                cb(results[0]);
-            } else {
-                let newDefault = {_id:new ObjectId(),title:"default",items:[],userId:ObjectId(query.userId),currentTrack:0};
-              
-                cb(newDefault);
-            }
-            
+            if (err) {
+				console.log(err);
+				cb({message:'fail'})
+			} else {
+				let defaultPlaylist=null;
+				let defaultPlaylistKey=null;
+				let final= json && json.length > 0 ? json : JSON.parse(JSON.stringify(samplePlaylists)); 
+				if (results && results.length > 0) {
+					cb(results[0]);
+				} else {
+					let newDefault = {_id:new ObjectId(),title:"default",items:[],userId:ObjectId(query.userId),currentTrack:0};
+				    cb(newDefault);
+				}
+			}
         })
-    }
+    } else {
+		cb({message:'fail'})
+	}
 }
 
 var getPlaylists = function(query,cb) {
-   //console.log('GET PLylists');
     let criteria=[];
     let that = this;
         
@@ -701,32 +790,36 @@ var getPlaylists = function(query,cb) {
         db.collection('playlists')
         .find({$and:criteria})
         .toArray(function(err, json) {
-            if (err) console.log(err);
-            //console.log('GOT PLylists');
-            //console.log(json);
-            // ensure default playlist
-            let defaultPlaylist=null;
-            let defaultPlaylistKey=null;
-            let final= json && json.length > 0 ? json : []; //JSON.parse(JSON.stringify(samplePlaylists)); 
-    
-            json.map(function(val,key) {
-              //console.log(['IS DEFAULT ??',JSON.stringify(val)]);
-              if (val.title && val.title.trim().toLowerCase(val.title)==="default") {
-                //  console.log(['YES']);
-                  defaultPlaylist = val;
-                  defaultPlaylistKey = key;
-              }
-              //final.push(val);
-            });
-            
-            if (defaultPlaylist === null) {
-              let newDefault = {_id:new ObjectId(),title:"default",items:[],userId:ObjectId(query.userId),currentTrack:0};
-              db.collection('playlists').insertOne(newDefault);
-             // console.log(['create DEFAULT ',JSON.stringify(newDefault)]);
-              final.unshift(newDefault);
-            }
-          //  console.log(['final ??',JSON.stringify(final.length)]);
-            cb(final);
+            if (err) {
+				console.log(err);
+				cb({message:'fail'})
+			} else {
+				//console.log('GOT PLylists');
+				//console.log(json);
+				// ensure default playlist
+				let defaultPlaylist=null;
+				let defaultPlaylistKey=null;
+				let final= json && json.length > 0 ? json : []; //JSON.parse(JSON.stringify(samplePlaylists)); 
+		
+				json.map(function(val,key) {
+				  //console.log(['IS DEFAULT ??',JSON.stringify(val)]);
+				  if (val.title && val.title.trim().toLowerCase(val.title)==="default") {
+					//  console.log(['YES']);
+					  defaultPlaylist = val;
+					  defaultPlaylistKey = key;
+				  }
+				  //final.push(val);
+				});
+				
+				if (defaultPlaylist === null) {
+				  let newDefault = {_id:new ObjectId(),title:"default",items:[],userId:ObjectId(query.userId),currentTrack:0};
+				  db.collection('playlists').insertOne(newDefault);
+				 // console.log(['create DEFAULT ',JSON.stringify(newDefault)]);
+				  final.unshift(newDefault);
+				}
+			  //  console.log(['final ??',JSON.stringify(final.length)]);
+				cb(final);
+			}
         })
     } else {
         let final= [] ; //samplePlaylists ? JSON.parse(JSON.stringify(samplePlaylists)) : [];

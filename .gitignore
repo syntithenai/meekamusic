@@ -1,5 +1,7 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
+/public/thecode.mp4
 config.js
+src/youTubeApiKey.js
 /music
 /namecheap_dyndns
 /docker-run
@@ -9,7 +11,7 @@ config.js
 /config.js
 # dependencies
 /node_modules
-
+/import
 # testing
 /coverage
 
