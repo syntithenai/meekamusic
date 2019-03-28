@@ -57,12 +57,16 @@ app.use('/', proxy({ target: config.reactServer }))
 
 // SSL
 // allow self generated certs
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-var options = {
-    key: fs.readFileSync('./key.pem'),
-    cert: fs.readFileSync('./certificate.pem'),
-};
-let port='443'
+let options = {}
+let port = '80'
+if (process.env.MEEKA_DISABLE_SSL) {
+	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+	options = {
+		key: fs.readFileSync('./key.pem'),
+		cert: fs.readFileSync('./certificate.pem'),
+	};
+	port='443'
+}
 var webServer = https.createServer(options, app).listen(port, function(){
   console.log("Express server listening on port " + port);
 });

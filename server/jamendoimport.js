@@ -22,6 +22,7 @@ String.prototype.hashCode = function() {
 };  
 
 let db;
+let counter = 0;
 MongoClient.connect(config.databaseConnection, (err, client) => {
   if (err) return console.log(err)
   db = client.db(config.database) 
@@ -145,9 +146,9 @@ MongoClient.connect(config.databaseConnection, (err, client) => {
 			//console.log(e);
 		//}
 		let id3Genre = []
-		let lookup = item.id3genre ? item.id3genre : currentAlbumGenre;
-		if (lookup && id3Genres.hasOwnProperty(lookup)) {
-			id3Genre.push(id3Genres[lookup])
+		let lookup = 'id_'+(item.id3genre ? item.id3genre : currentAlbumGenre) ;
+		if (lookup && id3Genres.hasOwnProperty(String(lookup))) {
+			id3Genre.push(id3Genres[String(lookup)])
 		}
 		let url ='https://mp3d.jamendo.com/download/track/'+item.id+'/mp32/'
 		let newItem = {
@@ -173,14 +174,14 @@ MongoClient.connect(config.databaseConnection, (err, client) => {
 					 tags.push(tag.idstr);
 				 } 
 			  });
-		  }
+		 		 }
 		  if (tags.length > 0) newItem.tags = tags;
 		  
 		  // COLLATE GENRES into
 			// - genres with frequency score
 			// - genres for each groupByKey
 			let ensureGenreTags = function(fromGenre) {
-				//console.log(['ENSURE GENRE ']);
+		//		console.log(['ENSURE GENRE ',fromGenre]);
 				// if not already processed
 				if (fromGenre && Array.isArray(fromGenre)) {
 					return fromGenre.map(function(genre,key) {
@@ -194,20 +195,20 @@ MongoClient.connect(config.databaseConnection, (err, client) => {
 			let promises=[];
 				 
 				 
-		    console.log(['pretags',newItem.genre]);
+		  //  console.log(['pretags',newItem.genre]);
 			if (newItem.genre && newItem.genre.length > 0) {
 				// make sure genres exist in tags collection and update tally
 				newItem.genre = ensureGenreTags(newItem.genre);
-			    console.log(['GENRE',newItem.genre]);
+			//    console.log(['GENRE',newItem.genre]);
 				// collate tags first time  only
 					let tParts = newItem.genre;
 					for (let tKey in tParts) {
 						let tag = tParts[tKey];
-			            console.log(['CHECK TAG '+tag]);
+			  //          console.log(['CHECK TAG '+tag]);
 						let thePromise = new Promise (function(resolve,reject) {
 							db.collection('tags').find({title:tag}).toArray().then(function(tags) {
 								let tallyType='jamendo';
-								console.log(['INS OR UPDATE ',tags])
+				//				console.log(['INS OR UPDATE ',tags])
 								if (tags!= null && tags.length > 0) {
 									let tallies = tags[0].tallies ? tags[0].tallies : {};
 									tallies[tallyType] = tallies.hasOwnProperty(tallyType) ? tallies[tallyType] + 1 : 0;
@@ -251,7 +252,8 @@ MongoClient.connect(config.databaseConnection, (err, client) => {
 			
 		  if (!newItem.created) newItem.created = new Date().getTime()
 		
-		  
+		  counter++;
+		  console.log(counter);
 		 // console.log(newItem);
 		  tracks.push(newItem);
 		  
