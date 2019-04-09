@@ -68,6 +68,7 @@ MongoClient.connect(config.databaseConnection, (err, client) => {
 				 } 
 			  });
 			}
+			
 			let newItem = {
 				fma_id : parseInt(item.track_id,10),
 				duration: item.track_duration,
@@ -83,8 +84,8 @@ MongoClient.connect(config.databaseConnection, (err, client) => {
 				license: item.license_url ,
 				comment:'',
 				languageCode: item.track_language_code,
-				interest: item.track_interest,
-				listens: item.track_listens,
+				interest: parseInt(item.track_interest),
+				listens: parseInt(item.track_listens),
 				artist: item.artist_name,
 				album: item.album_title,
 				albumArtist: item.artist_name,
@@ -92,8 +93,15 @@ MongoClient.connect(config.databaseConnection, (err, client) => {
 				year: new Date(item.track_date_recorded ? item.track_date_recorded : item.track_date_created).getFullYear()
 			}
 		
+			// where score is missing (jamendo), randomly assign 0-5 value
+			let interest = newItem.hasOwnProperty('interest') ? newItem.interest/1000000 : Math.random()*5;
+			interest = (parseFloat(interest) !== NaN ? parseFloat(interest) : 0)
+			let listens = newItem.hasOwnProperty('listens') ?  newItem.listens/100000 : Math.random()*5;
+			listens = parseFloat(listens) !== NaN ? parseFloat(listens) : 0
 			
-		// clean keys and assign primary grouping value
+			newItem.score = {interest:interest, listens:listens,plays:0,favorites:0};
+			newItem.finalScore = interest + listens;
+			// clean keys and assign primary grouping value
 			newItem.artistKey = newItem.artist ? removeDiacritics(newItem.artist).replace(/[^\w\s,]+|\s+/gmi, "").trim().toLowerCase() : '';
 
 			newItem.albumArtistKey =  newItem.albumArtist ? removeDiacritics(newItem.albumArtist).replace(/[^\w\s,]+|\s+/gmi, "").trim().toLowerCase() : '';

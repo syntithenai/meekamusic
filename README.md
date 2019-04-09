@@ -1,3 +1,66 @@
+# BUGS
+- youtube search result format flip flop ???
+- video visibility - youtube on load
+
+- github login
+- expand contract - redirect to login check authenticated paths
+
+- login system issues
+	- redirect to failing page after refresh login 
+
+
+# TODO
+- continuous auto import with UI feedback
+- remove userid parameter from requests, use req.user from passport in express routes
+- feature/suggestion boxes (single view in list)
+
+# EASY
+- edit playlist title
+- search playlists
+- search tags
+- play all button
+- show source everywhere (playlist, history, search results) ie FMA, jamendo, youtube, local, ..
+
+
+# NEXT
+- movies/video
+	- UI like others
+	- import routine extract meta from FS paths + XML files.
+- chromecast
+- voice app using jovo and hermod
+
+# ONE DAY
+- share playlist
+- blocks - by tag, artist, track
+	- block buttons
+	- UI showing block filters (advanced search)
+	- server side implement filters
+- error message handler
+- config from ENV for docker
+- per track access controls - public, user + groups ?
+- restore autoscroll ??
+	- to top on mount 
+		- playlists
+- click home scroll to top ??
+
+- fma/jamendo restore live search as well as library tracks.
+- fma download full archive
+- archive.org API + scrape
+- profile page stats
+	- tracks played
+	- genres
+	- ...
+	- what other capture to support reporting ?
+- db paging to support infinite list
+- improve continue play on fail .
+
+- VOICE
+
+
+
+# DONE
+- sort by least number of tags
+
 
 
 http://www.baroquemusic.org/49Web.html

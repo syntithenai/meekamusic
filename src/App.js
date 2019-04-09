@@ -16,9 +16,11 @@ import Header from './Header'
 import MeekaPlayer from './MeekaPlayer'
 import HomePage from './HomePage'
 //import Utils from './Utils'
-import LoginSystem from 'react-express-oauth-login-system'
+import LoginSystem from './LoginSystem'
 import ReactResizeDetector from 'react-resize-detector';
 //import {debounce} from 'throttle-debounce';
+
+//import Cookies from 'js-cookies'
 
 import youTubeApiKey from './youTubeApiKey'
 class App extends Component {
@@ -44,6 +46,7 @@ class App extends Component {
         this.startWaiting = this.startWaiting.bind(this)
         this.stopWaiting = this.stopWaiting.bind(this)
         this.onLogin = this.onLogin.bind(this)
+        this.setUser = this.setUser.bind(this)
         this.onLogout = this.onLogout.bind(this)
         this.onResize = this.onResize.bind(this)
         this.handleScroll = this.handleScroll.bind(this)
@@ -55,6 +58,8 @@ class App extends Component {
     
   
     componentDidMount() {
+		//,Cookies.get('user')
+		console.log(['APP MOUNT'])
         window.addEventListener('scroll', this.handleScroll);
         // else {
 			//window.location = url;
@@ -73,7 +78,9 @@ class App extends Component {
         this.setState({hideHeader:false,hideFooter:false});
     };
     
-    // any scroll up shows the header
+    /**
+     * Handle window scroll event to show/hide header/footer
+     */
     handleScroll(event)  {
         //let that = this;
         //event.preventDefault();
@@ -81,32 +88,22 @@ class App extends Component {
         let lastScrollY = this.state.lastScroll ? this.state.lastScroll : 1;
         let scrollY = window.scrollY;
         let scrollDiff = lastScrollY - scrollY;
+        // scroll to top -> show header/footer
         if (scrollY < 20)  {
             this.showHeaderFooter(); 
+        // hide header/footer for 1.5s on scroll
         } else if (Math.abs(scrollDiff) > 3)  {
-        
             this.setState({hideHeader:true,hideFooter:true,lastScroll:scrollY});
             clearTimeout(this.scrollTimeout);
-            this.scrollTimeout = setTimeout(this.showHeaderFooter,1500); 
+            this.scrollTimeout = setTimeout(this.showHeaderFooter,500); 
         }
-        //let lastScrollY = this.state.lastScroll ? this.state.lastScroll : 1;
-        ////let scrollTop = event.srcElement.body.scrollTop
-       //// let itemTranslate = Math.min(0, scrollTop/3 - 60);
-        //let scrollDiff = lastScrollY - scrollY;
-      //  console.log(['SCROLL',scrollY,lastScrollY,lastScrollY - scrollY]);
-        //if (scrollDiff > 5 || scrollY > 20) {
-            //this.setState({hideHeader:true,lastScroll:scrollY,hideFooter:true});
-            //let that = this;
-            //setTimeout(function() {
-                //that.setState({hideFooter:false});
-            //},2000);
-        //} else if (scrollDiff < -5 || scrollY < 20) {
-            //this.setState({hideHeader:false,lastScroll:scrollY,hideFooter:false});
-        //}
-////        this.setState({hideHeader:!this.state.hideHeader,lastScroll:lastScrollY});
-    //    return false;
     }
     
+    /**
+     * Handle list scroll
+     *  - hide/show header/footer
+     *  - 
+     */
     onScroll(scrollDirection,scrollOffset,element) {
       //  let that = this;
         let lastScrollOffset = this.state.scrollOffset ? this.state.scrollOffset : 1;
@@ -116,7 +113,7 @@ class App extends Component {
         } else if (Math.abs(scrollDiff) > 3)  {
             this.setState({hideHeader:true,hideFooter:true,scrollOffset:scrollOffset});
             clearTimeout(this.scrollTimeout);
-            this.scrollTimeout = setTimeout(this.showHeaderFooter,1500)
+            this.scrollTimeout = setTimeout(this.showHeaderFooter,500)
         
         }
         
@@ -178,7 +175,7 @@ class App extends Component {
            //newPlaylist:that.newPlaylist,
            //deletePlaylist:that.deletePlaylist,
            //setPlaylist:that.setPlaylist,
-           //play:that.play,
+           //play:that.play,setSearchFilter
            //pause:that.pause,
            //togglePlayback:that.togglePlayback,
            //nextTrack:that.nextTrack,
@@ -302,16 +299,25 @@ class App extends Component {
     };
     
     onLogin(user,props) {
-       console.log(['ONLOGIN',user,props,this.props]);
+       console.log(['ONLOGIN',localStorage.getItem('lastPath'),user,props,this.props]);
         this.setState({user:user});
         let lastPath = localStorage.getItem('lastPath')
         console.log(lastPath);
-        if (lastPath && lastPath.length > 0 && lastPath !== null  && lastPath !== 'null') {
-		  localStorage.setItem('lastPath',null);	
-		 // window.location = lastPath;
-		}
+        if (lastPath && lastPath.length > 0) {
+		  localStorage.setItem('lastPath','');	
+		  props.history.push(lastPath);
+		  //window.location = lastPath;
+		} else {
+			props.history.push('/');
+       }
         
     };
+    
+    setUser(user) {
+		console.log(['setuser',user]);
+        this.setState({user:user});
+       
+	}
     
     onLogout(user,props) {
        console.log(['ONLOGout APP']);
@@ -335,7 +341,7 @@ class App extends Component {
                         
                         <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} >
                         </ReactResizeDetector>
-                        <PropsRoute path='/' component={LoginSystem}  authServer={'/api/login'}  setUser={this.onLogin}  onLogin={this.onLogin} onLogout={this.onLogout} startWaiting={this.startWaiting} stopWaiting={this.stopWaiting} allowUser={this.allowUser} loginButtons={['google','twitter','facebook','github']} />
+                        <PropsRoute path='/' component={LoginSystem}  authServer={'/api/login'}  setUser={this.setUser}  onLogin={this.onLogin} onLogout={this.onLogout} startWaiting={this.startWaiting} stopWaiting={this.stopWaiting} allowUser={this.allowUser} loginButtons={['google','twitter','facebook','github']} />
                    </div>
                 </div>
                 

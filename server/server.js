@@ -17,7 +17,7 @@ var authenticate = require('react-express-oauth-login-system/authenticate');
 //app.use('/oauth',require('./src/react-express-oauth-login-system/oauth.js'));
 
 
-router.get('/tracks',authenticate,(req, res) => {
+router.get('/tracks',(req, res) => {
 	console.log(['search tracks',req.query])
     songHandler.search('tracks',req.query,function(results) {
      //   console.log(['search results',results])
@@ -25,20 +25,20 @@ router.get('/tracks',authenticate,(req, res) => {
     });
 })
 
-router.post('/tracks',authenticate,(req, res) => {
-    songHandler.search('tracks',req.body,function(results) {
-        res.send(results);
-    })
-})
+//router.post('/tracks',authenticate,(req, res) => {
+    //songHandler.search('tracks',req.body,function(results) {
+        //res.send(results);
+    //})
+//})
 
 router.get('/tracksbyartist',authenticate,(req, res) => {
-    songHandler.searchTracksByArtist(req.query,function(results) {
+    songHandler.searchTracksByArtist(req.user,req.query,function(results) {
         res.send(results);
     })
 })
 
 router.get('/tracksbyalbum',authenticate,(req, res) => {
-    songHandler.searchTracksByArtistAndAlbum(req.query.artist,req.query.album,function(results) {
+    songHandler.searchTracksByArtistAndAlbum(req.user,req.query.artist,req.query.album,function(results) {
         res.send(results);
     })
 })
@@ -162,7 +162,7 @@ router.use(cookieParser());
 
 // proxy access for files with streaming support
 router.get('/stream',(req, res) => {
- //   console.log(['STREAM',req.cookies]);
+    console.log(['STREAM',req.cookies]);
     if (req.cookies && req.cookies.user) {
 		let user = JSON.parse(req.cookies.user);
 		if (user && user.token && user.token.access_token) {

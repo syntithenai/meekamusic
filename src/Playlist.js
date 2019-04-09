@@ -91,7 +91,7 @@ export default class Playlist extends Component {
             
             if (currentPlaylist >= 0) {
                 this.props.setPlaylist(currentPlaylist);
-               // let initOffset = ((this.props.currentTrack+3) * 70) ;
+              //  let initOffset = ((this.props.currentTrack+5) * 70) ;
                 listRef.current && listRef.current.scrollToItem(parseInt(this.props.currentTrack,10),"center");
                 //let currentPlaylistObject = that.props.playlists[currentPlaylist] ? that.props.playlists : {}; 
                      
@@ -231,7 +231,7 @@ export default class Playlist extends Component {
             } else {
                 let artist='';
                 //let artistName = item.artist ? item.artist : '';
-                let artistSearchLink = "/meeka/search/"+encodeURI(item.artist);
+                let artistSearchLink = "/Dmeeka/search/"+encodeURI(item.artist);
                 
                 let userId = (that.props.user && that.props.user._id && that.props.user._id.length > 0) ? that.props.user._id : false;
                 
@@ -293,8 +293,7 @@ export default class Playlist extends Component {
     _noRowsRenderer(styles) {
         return <div style={{textAlign:'center'}}>Nothing on your playlist<br/>
                 <br/>
-                {!this.props.isLoggedIn() && <Link to="/meeka/jamendo" ><button>Add some tracks</button></Link>}
-                {this.props.isLoggedIn() && <Link to="/meeka/search" ><button>Add some tracks</button></Link>}
+             <Link to="/meeka/search" ><button>Add some tracks</button></Link>
                 </div>
     }
     
@@ -393,6 +392,8 @@ export default class Playlist extends Component {
         if (citems && citems.items && citems.items.length > 2 ) {   // allow for buttons
             //console.log([window.innerHeight,window.innerWidth,citems.items.length,that._getRowHeight()]);
             //let initOffset = (this.props.searchResultsScrollToIndex && this.props.searchResultsScrollToIndex.hasOwnProperty('playlist')) ? this.props.searchResultsScrollToIndex.playlist : 0;
+            
+            // jump to current track
             let initOffset = ((this.props.currentTrack+3) * 70) ;
            // console.log(['OFFSET',this.props.currentTrack,initOffset]);
             //let paddingTop='0em'; //Utils.isMobile() ? '2em' : '2em';

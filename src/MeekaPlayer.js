@@ -18,8 +18,8 @@ import PropsRoute from './PropsRoute'
 import MeekaModelManager from './MeekaModelManager'
 
 import YoutubeSearcher from './YoutubeSearcher'
-import FmaSearcher from './FmaSearcher'
-import JamendoSearcher from './JamendoSearcher'
+//import FmaSearcher from './FmaSearcher'
+//import JamendoSearcher from './JamendoSearcher'
 
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -62,14 +62,16 @@ export default class MeekaPlayer extends Component {
             isPlaying: false,
             currentPlaylist:0,
             currentTrack:0,
-            playlists:[], //'[{_id:'default',title:"default",items:[],currentTrack:0}], //{_id:'default',title:"default",items:[]}],
+            playlists:[{_id:'default',title:"default",items:[],currentTrack:0}], //{_id:'default',title:"default",items:[]}],
             searchFilter:'',
             searchFilterTag:'',
+            searchFilterArtist:'',
+            searchFilterAlbum:'',
             searchResults:{},
             artists:[],
             expandedArtists:{},
             showingPlayControls:true,
-            searchResultsScrollToIndex:{},
+           // searchResultsScrollToIndex:{},
             tags : {},
             renderedTags:null,
             errorCount:0,
@@ -131,10 +133,10 @@ export default class MeekaPlayer extends Component {
                    //  let currentPlaylist = that.state.playlists[currentPlaylistKey]
                      that.functions.setPlaylist(currentPlaylistKey);
                      //that.functions.selectTrack((currentPlaylist.currentTrack ? currentPlaylist.currentTrack : 0),currentPlaylistKey);
-                     if (that.props.user.isPlaying) {
-                         that.functions.play();
-                         that.setState({isPlaying:true});
-                     }
+                     //if (that.props.user.isPlaying) {
+                         //that.functions.play();
+                         //that.setState({isPlaying:true});
+                     //}
                  }
              });
         }
@@ -172,7 +174,7 @@ export default class MeekaPlayer extends Component {
 			if (currentTrack.url.startsWith('http://') || currentTrack.url.startsWith('https://')) {
 				currentUrl = currentTrack.url
 			} else {
-				let code = this.props.user && this.props.user.token ? this.props.user.token.access_token : '';
+				//let code = this.props.user && this.props.user.token ? this.props.user.token.access_token : '';
 				currentUrl = this.props.apiUrl + currentTrack.url ;
 				//+ '&access_token='+code;				
 			}
@@ -213,25 +215,75 @@ export default class MeekaPlayer extends Component {
        if (this.state.redirect && this.state.redirect.length > 0) {
 			return <Redirect to={this.state.redirect} />
 		}
+       // console.log('MEEKA PLAYER re');
         
         //let playerBlock = 
         return <div style={{width:'100%'}}>
+	            
             <PropsRoute {...options} path="/meeka/playlists" component={Playlists} />
             <PropsRoute exact={true} {...options} path="/meeka/playlist/:id" component={Playlist}/>
             <PropsRoute exact={true} {...options} path="/meeka/playlist" component={Playlist}/>
             <PropsRoute {...options} path="/meeka/stats" component={Stats}/>
             <PropsRoute {...options} path="/meeka/tags" component={Tags}/>
-            <PropsRoute {...options} path="/meeka/search" component={Search} />
-            <PropsRoute {...options} path="/meeka/favorites" component={Search} />
-            <PropsRoute {...options} path="/meeka/history" component={Search} />
-            <PropsRoute {...options} path="/meeka/fresh" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/search/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/search/tag/:tag" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/search/tag/:tag/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/search/artist/:artist" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/search/artist/:artist/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/search/artist/:artist/album/:album" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/search/artist/:artist/album/:album/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/search/artist/:artist/album/:album/tag/:tag" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/search/artist/:artist/album/:album/tag/:tag/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/search/artist/:artist/tag/:tag" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/search/artist/:artist/tag/:tag/:search" component={Search} />
+            
+            <PropsRoute {...options} exact={true} path="/meeka/favorites" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/favorites/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/favorites/tag/:tag" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/favorites/tag/:tag/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/favorites/artist/:artist" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/favorites/artist/:artist/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/favorites/artist/:artist/album/:album" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/favorites/artist/:artist/album/:album/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/favorites/artist/:artist/album/:album/tag/:tag" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/favorites/artist/:artist/album/:album/tag/:tag/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/favorites/artist/:artist/tag/:tag" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/favorites/artist/:artist/tag/:tag/:search" component={Search} />
+            
+            <PropsRoute {...options} exact={true} path="/meeka/history" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/history/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/history/tag/:tag" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/history/tag/:tag/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/history/artist/:artist" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/history/artist/:artist/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/history/artist/:artist/album/:album" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/history/artist/:artist/album/:album/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/history/artist/:artist/album/:album/tag/:tag" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/history/artist/:artist/album/:album/tag/:tag/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/history/artist/:artist/tag/:tag" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/history/artist/:artist/tag/:tag/:search" component={Search} />
+            
+            <PropsRoute {...options} exact={true} path="/meeka/fresh" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/fresh/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/fresh/tag/:tag" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/fresh/tag/:tag/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/fresh/artist/:artist" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/fresh/artist/:artist/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/fresh/artist/:artist/album/:album" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/fresh/artist/:artist/album/:album/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/fresh/artist/:artist/album/:album/tag/:tag" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/fresh/artist/:artist/album/:album/tag/:tag/:search" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/fresh/artist/:artist/tag/:tag" component={Search} />
+            <PropsRoute {...options} exact={true} path="/meeka/fresh/artist/:artist/tag/:tag/:search" component={Search} />
+            
             <PropsRoute {...options} path="/meeka/youtube" component={YoutubeSearcher} />
             <PropsRoute {...options} path="/meeka/menu"  isLoggedIn={this.props.isLoggedIn} component={Menu}/>
             <PropsRoute {...options} path="/meeka/help" component={Help}/>
             <Media ref={this._player} >
                 { mediaProps => <div>
 				{!this.props.hideFooter && options.showingPlayControls && <PropsRoute {...options}   path="/"  component={PlayControls}  />}
-                {currentUrl &&  <div className={wrapperTag} onClick={options.showPlayControls} style={{visibility:(((trackType==="youtube") || (mediaProps.isPlaying)) && trackType!="audio" && !this.state.forceHideVideo)?'visible':'hidden',display:'block'}} >
+                {currentUrl &&  <div className={wrapperTag} onClick={options.showPlayControls} style={{visibility:(((trackType==="youtube") || (mediaProps.isPlaying)) && trackType!=="audio" && !this.state.forceHideVideo)?'visible':'hidden',display:'block'}} >
 					<Player height="800px" vendor={trackType} src={currentUrl} autoPlay={autoPlay} className="media-player" onPlay={options.onPlay} onPause={this.onPause} onError={options.onError} onEnded={options.onEnded} onStalled={this.onStalled} onProgress={this.onProgress} onTimeUpdate={options.onTimeUpdate} style={playerStyle} />
                 </div>}
                 </div> }

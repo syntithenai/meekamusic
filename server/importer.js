@@ -85,6 +85,8 @@ var removeDiacritics = function(text) {
                         format: metaParts[1],
                         mime: meta.mime,
                         updated : new Date().getTime(),
+                        score: {interest:0, listens:0,plays:0,favorites:0},
+                        finalScore: 0
                     }
                     
                     

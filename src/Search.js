@@ -18,7 +18,7 @@ import {FaHistory as HistoryButton} from 'react-icons/fa';
 import {FaHeart as FavoritesButton} from 'react-icons/fa';
 import {FaEnvira as FreshButton} from 'react-icons/fa';
 import Utils from './Utils';
-//import {debounce} from 'throttle-debounce';
+import {debounce} from 'throttle-debounce';
 
 
 export default class Search extends Component {
@@ -26,158 +26,86 @@ export default class Search extends Component {
     constructor(props) {
         super(props);
         this.state={};
-        this.playTrack = this.playTrack.bind(this);
-        this.enqueueTrack = this.enqueueTrack.bind(this);
-        this.clearSearchFilterTag = this.clearSearchFilterTag.bind(this);
-        this.searchFilterChange = this.searchFilterChange.bind(this);
-        this.extractQueryParts = this.extractQueryParts.bind(this);
-        this.pushHistory = this.pushHistory.bind(this);
+        this.searchFilterChange = debounce(500,this.searchFilterChange.bind(this));
+//        this.searchFilterChange = this.searchFilterChange.bind(this);
+        this.getSearchUrl = this.getSearchUrl.bind(this)
     };
     
-    extractQueryParts() {
-        let searchFilter = '';
-            let searchFilterTag = '';
-            let urlParts = this.props.location.pathname.split(this.props.match.path);
-            let query = urlParts[urlParts.length - 1].slice(1);
-            let queryParts = query.split("/");
-            if (queryParts.length === 2 && queryParts[0]==='tag') {
-                searchFilterTag = queryParts[1];
-            } else if (queryParts.length === 3 && queryParts[0]==='tag') {
-                searchFilterTag = queryParts[1];
-                searchFilter = queryParts[2];
-            } else {
-                searchFilter = queryParts[queryParts.length - 1];
-            }
-            return {searchFilter:searchFilter,searchFilterTag:searchFilterTag};
-    };
-    
-    componentDidMount() {
-        // SET SEARCH FILTERS FROM URL
-        console.log(['SESARCHDIDMOUNT']);
-            let queryParts=this.extractQueryParts();
-          //  console.log([queryParts]);
-            this.props.setSearchFilter(queryParts.searchFilter);
-            this.props.setSearchFilterTag(queryParts.searchFilterTag);
-    }
-    componentDidUpdate(props) {
-        //console.log(['SESARCHDID UDPATE',props,this.props]);
-            //let queryParts=this.extractQueryParts();
-            //console.log([queryParts]);
-            //this.props.setSearchFilter(queryParts.searchFilter);
-            //this.props.setSearchFilterTag(queryParts.searchFilterTag);
-    }
-     
-    shouldComponentUpdate(prevProps) {
-        return true;
-       ////console.log(['SESARCH should UDPATE??']);
-            //let queryParts=this.extractQueryParts();
-           //// console.log([queryParts.searchFilter,prevProps.searchFilter,this.props.searchFilter]);
-            //console.log([prevProps.searchResults.local,this.props.searchResults.local]);
-            //let prevLocalResults = prevProps.searchResults && prevProps.searchResults.local ? prevProps.searchResults.local  : [];
-            //let currentLocalResults = this.props.searchResults && this.props.searchResults.local ? this.props.searchResults.local  : [];
-            //if (this.props.searchFilter != queryParts.searchFilter || this.props.searchFilterTag != queryParts.searchFilterTag) {
-                //console.log('YES change filter A');
-                //return true;
-            //} else if (prevProps.searchFilter != queryParts.searchFilter || prevProps.searchFilterTag != queryParts.searchFilterTag) {
-                //console.log('YES change filter B');
-                //return true;
-            //} else if (prevProps.tags != this.props.tags) {
-                //console.log('YES newtags');
-                //return true;
-            //} else if (prevLocalResults.length != currentLocalResults.length) {
-                //console.log('YES change results');
-                //return true;
-            //} else {
-                //console.log('NO');
-                //return false;
-            //}
-            //this.props.setSearchFilter(searchFilter);
-            //this.props.setSearchFilterTag(searchFilterTag);
-    }
-    
-    //searchResults(results) {
-        //let foundSongs = this.state.foundSoungs;
-        //for (let i in results) {
-            //if (results[i]._id in foundSongs)
-        //}
-    //};
-    
-        
-    playTrack(track,playlist) {
-        //console.log(['PLAY',track,playlist]);
-        if (!playlist)  playlist=this.props.currentPlaylist;
-        this.props.startPlayTrack(track,playlist);
-        //this.props.history.push("/meeka/playlist");
-    };
-    
-    enqueueTrack(track,playlist) {
-       // console.log(['ENQUEUE',track,playlist]);
-        if (!playlist)  playlist=this.props.currentPlaylist;
-        this.props.addTrack(track,playlist);
-    };
-    
-    clearSearchFilterTag(e) {
-        e.preventDefault();
-        //this.props.setSearchFilterTag('');
-        let filter = this.props.searchFilter ? "/"+this.props.searchFilter  : '';
-        this.props.setSearchFilterTag('');
-        this.props.history.push(this.props.match.path+filter);
-    };
+    //shouldComponentUpdate(props) {
+		//return false;
+	//}
+   
+    getSearchUrl(props,mode) { //,override,force,mode) {
+		let parts = [];
+		let filterProps = Object.assign({},{searchFilter:this.props.match.params.search,searchFilterTag:this.props.match.params.tag,searchFilterArtist:this.props.match.params.artist,searchFilterAlbum:this.props.match.params.album},props);
+	//	console.log(['GETSEARCHURL',props,this.props.match.params,mode,filterProps])
+		if (filterProps.searchFilterArtist && filterProps.searchFilterArtist.length > 0) {
+			parts.push('artist')
+			parts.push(filterProps.searchFilterArtist) 
+			if (filterProps.searchFilterAlbum && filterProps.searchFilterAlbum.length > 0) {
+				parts.push('album')
+				parts.push(filterProps.searchFilterAlbum) 
+			}
+		}
+		if (filterProps.searchFilterTag && filterProps.searchFilterTag.length > 0) {
+			parts.push('tag')
+			parts.push(filterProps.searchFilterTag)
+		}
+		if (filterProps.searchFilter && filterProps.searchFilter.length > 0) {
+			parts.push(filterProps.searchFilter)
+		}
+		//console.log(['getsearchurl',this.props,parts,filterProps.searchFilterArtist,filterProps.searchFilterAlbum,filterProps.searchFilterTag,filterProps.searchFilter]);
+		let pathString = this.props.match.path.replace('http://','').replace('https://','')
+		if (pathString.startsWith('/')) {
+			pathString = pathString.slice(1);
+		}
+		let pathParts = pathString.split("/");
+		//console.log(['getsearchurlR',pathString,pathParts]);
+		let a = pathParts.length > 0 ? pathParts[0] + '/' : '';
+		let b = mode && mode.length > 0 ? mode+ '/' : (pathParts.length > 1 ? pathParts[1] + '/': '');
+	//	console.log(['GETSEARCHURL','/' + a + b + encodeURI(parts.join("/"))]);
+		return  '/' + a + b + encodeURI(parts.join("/"));
+	}
     
     searchFilterChange(val) {
-       // console.log(val);
         // eslint-disable-next-line
         var punctRE = /[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,\-.\/:;<=>?@\[\]^_`{|}~]/g;
         //this.setState({searchFilter:filter.replace(punctRE, " ")}); 
-        this.props.setSearchFilter(val.replace(punctRE, " "));
-        let queryParts=this.extractQueryParts();
-        let tag = queryParts.searchFilterTag && queryParts.searchFilterTag.length > 0 ? "tag/"+queryParts.searchFilterTag + "/" : '';
+        let a = val.replace(punctRE, " ")
+        //this.props.setSearchFilter(a);
+        //let queryParts=this.extractQueryParts();
+        //let tag = queryParts.searchFilterTag && queryParts.searchFilterTag.length > 0 ? "tag/"+queryParts.searchFilterTag + "/" : '';
         //this.props.history.push("/meeka/search/"+tag+val.replace(punctRE, " "));
-        this.pushHistory(this.props.match.path+"/"+tag+encodeURI(val.replace(punctRE, " ")));
-    };
-    
-    pushHistory(url) {
-        this.props.history.push(url);
+        console.log(this.getSearchUrl({searchFilter:a}));
+        
+        this.props.history.push(this.getSearchUrl({searchFilter:a})); //"/"+tag+encodeURI(val.replace(punctRE, " ")));
     };
             
     render() {
-       //console.log(['SEARCH RENDER']);
-        let searchLink = "";
-        if (this.props.searchFilterTag && this.props.searchFilterTag.length > 0) {
-            searchLink += "/tag/" + this.props.searchFilterTag;
-        }
-        if (this.props.searchFilter && this.props.searchFilter.length > 0) {
-            searchLink += "/" + this.props.searchFilter;
-        }
+       console.log(['SEARCH RENDER']);
+        //let searchLink = this.getSearchUrl() + "/";
+        //if (this.props.searchFilterTag && this.props.searchFilterTag.length > 0) {
+            //searchLink += "/tag/" + this.props.searchFilterTag;
+        //}
+        //if (this.props.searchFilter && this.props.searchFilter.length > 0) {
+            //searchLink += "/" + this.props.searchFilter;
+        //}
         //console.log(this.props);
         //let debugvals = JSON.stringify([this.props.searchFilter,this.props.searchFilterTag]);
         
-        let props = Object.assign({},{enqueueTrack:this.enqueueTrack,playTrack:this.playTrack},this.props);
+        let props = Object.assign({},{getSearchUrl:this.getSearchUrl,enqueueTrack:this.props.addTrack,playTrack:this.props.startPlayTrack},this.props);
         let size=20;
        // let buttonStyle={marginLeft:'0.2em',float:'right',marginTop:'0.4em'};
         //let tag = this.props.location.pathname.replace(this.props.path,"");
-        let tag = this.props.searchFilterTag;
-        if (tag && tag.length > 0)  {
-            //let isTag = false;
-            //let tagParts = tag.split("/");
-            //if (tagParts.length > 1) {
-                //tag = tagParts[tagParts.length - 1];
-                //isTag = tagParts[tagParts.length - 2] === "tag";
-            //}
-            //if (isTag) {
-                tag = <button onClick={this.clearSearchFilterTag} className='btn'>{tag} <DeleteButton/></button>
-            //} else {
-                //tag = [];
-            //}
-            
-        }
+        let tagButton = this.props.match.params.tag && this.props.match.params.tag.length > 0 ? <Link to={this.getSearchUrl({searchFilterTag:''})} ><button onClick={this.clearSearchFilterTag} className='btn'>{this.props.match.params.tag} <DeleteButton/></button></Link> : '' ;
+        let artistButton = this.props.match.params.artist && this.props.match.params.artist.length > 0 ? <Link to={this.getSearchUrl({searchFilterArtist:'',searchFilterAlbum:''})} ><button  className='btn'>{this.props.match.params.artist} <DeleteButton/></button></Link>  : '';
+		let albumButton = this.props.match.params.album && this.props.match.params.album.length > 0 ? <Link to={this.getSearchUrl({searchFilterAlbum:''})}><button  className='btn'>{this.props.match.params.album} <DeleteButton/></button></Link>  : '';
+
         
-              
-                        //<Link to="/meeka/menu"   >&nbsp;<button className='btn'  ><MenuButton  size={size}/><span className="d-none d-md-inline"> More</span></button></Link>
-     //<Link style={{marginLeft:'0px',paddingLeft:'0px',textAlign:'left'}} to="/meeka/playlists"  ><button className='btn'><PlaylistButton size={size} /><span className="d-none d-md-inline"> Playlists</span></button></Link>&nbsp;
+        // extract current view from path to determine button outline
         let matchParts = this.props.match.path.split("/");
         let style = {};
-        style[matchParts[matchParts.length -1]] = {borderBottom:"2px solid blue"};
+        if (matchParts.length > 1) style[matchParts[1]] = {borderBottom:"2px solid blue"};
         let inputsize=20;
         if (Utils.isMobile()) {
             inputsize=8;
@@ -185,25 +113,18 @@ export default class Search extends Component {
         let buttons = [];
         if (true || !this.props.hideHeader) {
             buttons =<div style={{zIndex:10,width:'100%',position:'fixed',top:60,left:0}}>
-                    
-                   
                     <span style={{float:'left',textAlign:'left'}}>
                     <form  style={{width:'100%',backgroundColor:'lightgrey'}} onSubmit={(e) => { e.preventDefault() ; return false}}>
-                    <Link style={{marginLeft:'0px',paddingLeft:'0px',textAlign:'left'}} to={"/meeka/search"+searchLink}  ><button style={style.search} className='btn'><PlaylistButton size={size} /><span className="d-none d-md-inline"> All</span></button></Link>&nbsp;
                     
+                    {this.props.isLoggedIn() && <span><Link style={{marginLeft:'0px',paddingLeft:'0px',textAlign:'left'}} to={this.getSearchUrl({},'search')}  ><button style={style.search} className='btn'><PlaylistButton size={size} /><span className="d-none d-md-inline"> All</span></button></Link>&nbsp;<Link style={{textAlign:'left'}} to={this.getSearchUrl({},'favorites')}  ><button  style={style.favorites} className='btn'><FavoritesButton   size={size} /><span className="d-none d-md-inline"> Favorites</span></button></Link> <Link style={{textAlign:'left'}} to={this.getSearchUrl({},'history')}  ><button  style={style.history}  className='btn'><HistoryButton size={size} /><span className="d-none d-md-inline"> History</span></button></Link> &nbsp;
+                    <Link style={{marginLeft:'0px',paddingLeft:'0px',textAlign:'left'}} to={this.getSearchUrl({},'fresh')}  ><button  style={style.fresh}  className='btn'><FreshButton size={size} /><span className="d-none d-md-inline"> Fresh</span></button></Link>&nbsp;</span>}
                     
-                     <Link style={{textAlign:'left'}} to={"/meeka/favorites"+searchLink}  ><button  style={style.favorites} className='btn'><FavoritesButton   size={size} /><span className="d-none d-md-inline"> Favorites</span></button></Link>&nbsp;
-                     
-                    <Link style={{textAlign:'left'}} to={"/meeka/history"+searchLink}  ><button  style={style.history}  className='btn'><HistoryButton size={size} /><span className="d-none d-md-inline"> History</span></button></Link>
-                    &nbsp;
-                    
-                    <Link style={{marginLeft:'0px',paddingLeft:'0px',textAlign:'left'}} to={"/meeka/fresh"+searchLink}  ><button  style={style.fresh}  className='btn'><FreshButton size={size} /><span className="d-none d-md-inline"> Fresh</span></button></Link>&nbsp;
 
                     
                     <span style={{textAlign:'left'}}>
                     <SearchButton size={20} className="d-none d-md-inline" style={{marginTop:'0.4em',marginBottom:'0.4em',marginLeft:'0.4em'}}/>&nbsp;
-                    <AutoFocusTextInput  value={this.props.searchFilter} setValue={this.searchFilterChange} setclassName="form-control" type="text"  size={inputsize}  placeholder="Search" aria-label="Search" />
-                    &nbsp;{tag}
+                    <AutoFocusTextInput  value={this.props.match.params.search ? this.props.match.params.search : ''} setValue={this.searchFilterChange} setclassName="form-control" type="text"  size={inputsize}  placeholder="Search" aria-label="Search" />
+                    &nbsp;{tagButton}  &nbsp;{artistButton}  &nbsp;{albumButton}
                     </span>
                     </form>
                     
@@ -216,11 +137,61 @@ export default class Search extends Component {
         
         return <div className='search' style={{width:'100%'}}>
                 <div style={{width:'100%', clear:'both'}}>
-                   <PropsRoute  {...props} path="/meeka/search"  buttons={buttons} endPoint="tracks" component={LibrarySearch}/>
-                   <PropsRoute  {...props} path="/meeka/history" buttons={buttons} endPoint="history" component={HistorySearch}  />
-                   <PropsRoute  {...props} path="/meeka/favorites" buttons={buttons} endPoint="favorites" component={FavoritesSearch}/>
-                   <PropsRoute  {...props} path="/meeka/fresh" buttons={buttons} skipArtistSort={true} endPoint="fresh" component={FreshSearch} />
-                    
+             		<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/search" component={LibrarySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/search/:search" component={LibrarySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/search/tag/:tag" component={LibrarySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/search/tag/:tag/:search" component={LibrarySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/search/artist/:artist" component={LibrarySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/search/artist/:artist/:search" component={LibrarySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/search/artist/:artist/album/:album" component={LibrarySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/search/artist/:artist/album/:album/:search" component={LibrarySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/search/artist/:artist/album/:album/tag/:tag" component={LibrarySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/search/artist/:artist/album/:album/tag/:tag/:search" component={LibrarySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/search/artist/:artist/tag/:tag" component={LibrarySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/search/artist/:artist/tag/:tag/:search" component={LibrarySearch} />
+
+
+
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="favorites" path="/meeka/favorites" component={FavoritesSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="favorites" path="/meeka/favorites/:search" component={FavoritesSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="favorites" path="/meeka/favorites/tag/:tag" component={FavoritesSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="favorites" path="/meeka/favorites/tag/:tag/:search" component={FavoritesSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="favorites" path="/meeka/favorites/artist/:artist" component={FavoritesSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="favorites" path="/meeka/favorites/artist/:artist/:search" component={FavoritesSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="favorites" path="/meeka/favorites/artist/:artist/album/:album" component={FavoritesSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="favorites" path="/meeka/favorites/artist/:artist/album/:album/:search" component={FavoritesSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="favorites" path="/meeka/favorites/artist/:artist/album/:album/tag/:tag" component={FavoritesSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="favorites" path="/meeka/favorites/artist/:artist/album/:album/tag/:tag/:search" component={FavoritesSearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/favorites/artist/:artist/tag/:tag" component={FavoritesSearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/favorites/artist/:artist/tag/:tag/:search" component={FavoritesSearch} />
+
+
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="history" path="/meeka/history" component={HistorySearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="history" path="/meeka/history/:search" component={HistorySearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="history" path="/meeka/history/tag/:tag" component={HistorySearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="history" path="/meeka/history/tag/:tag/:search" component={HistorySearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="history" path="/meeka/history/artist/:artist" component={HistorySearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="history" path="/meeka/history/artist/:artist/:search" component={HistorySearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="history" path="/meeka/history/artist/:artist/album/:album" component={HistorySearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="history" path="/meeka/history/artist/:artist/album/:album/:search" component={HistorySearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="history" path="/meeka/history/artist/:artist/album/:album/tag/:tag" component={HistorySearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="history" path="/meeka/history/artist/:artist/album/:album/tag/:tag/:search" component={HistorySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/history/artist/:artist/tag/:tag" component={HistorySearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/history/artist/:artist/tag/:tag/:search" component={HistorySearch} />
+
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="fresh" path="/meeka/fresh" component={FreshSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="fresh" path="/meeka/fresh/:search" component={FreshSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="fresh" path="/meeka/fresh/tag/:tag" component={FreshSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="fresh" path="/meeka/fresh/tag/:tag/:search" component={FreshSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="fresh" path="/meeka/fresh/artist/:artist" component={FreshSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="fresh" path="/meeka/fresh/artist/:artist/:search" component={FreshSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="fresh" path="/meeka/fresh/artist/:artist/album/:album" component={FreshSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="fresh" path="/meeka/fresh/artist/:artist/album/:album/:search" component={FreshSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="fresh" path="/meeka/fresh/artist/:artist/album/:album/tag/:tag" component={FreshSearch} />
+					<PropsRoute {...props} exact={true}  buttons={buttons} endPoint="fresh" path="/meeka/fresh/artist/:artist/album/:album/tag/:tag/:search" component={FreshSearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/fresh/artist/:artist/tag/:tag" component={FreshSearch} />
+					<PropsRoute {...props} exact={true} buttons={buttons} endPoint="tracks" path="/meeka/fresh/artist/:artist/tag/:tag/:search" component={FreshSearch} />
+
                 </div>
                 
         </div>

@@ -20,4 +20,4 @@ RUN npm install -g pm2
 VOLUME /usr/src/app
 
 EXPOSE 3000
-CMD [ "pm2", "start" ]
+CMD [ "pm2", "--no-daemon",  "start" ]

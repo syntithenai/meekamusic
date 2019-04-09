@@ -1,4 +1,5 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
+/jovo
 /public/thecode.mp4
 config.js
 src/youTubeApiKey.js

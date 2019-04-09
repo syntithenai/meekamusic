@@ -16,14 +16,20 @@ export default class FreshSearch extends LibrarySearch {
     //};
     
     componentDidMount() {
-        // redirect to youtube search if not logged in
-       // if (this.props.isLoggedIn()) {
+        	console.log(['fresh lSEARCH COMPONENT MOUNT']);
+
+		// redirect to youtube search if not logged in
+       // if (this.props.isLoggedIAlthough both of them aren()) {
             SearchComponent.prototype.componentDidMount.call(this);
         //} else {
             //this.props.history.push("/meeka/jamendo");
         //}
     };
     
+    componentDidUpdate(props) {
+		console.log(['fresh  lSEARCH COMPONENT UPDATE']);
+		SearchComponent.prototype.componentDidUpdate.call(this,props);
+    };
     
     render() {
         let paddingTop='0em'; //=Utils.isMobile() ? '7em' : '5em';

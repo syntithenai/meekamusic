@@ -7,8 +7,8 @@ import {FaYoutube as YoutubeButton} from 'react-icons/fa';
 import {FaListUl as PlaylistsButton} from 'react-icons/fa';
 import {FaUser as ProfileButton} from 'react-icons/fa';
 //import {FaSignOutAlt as LogoutButton} from 'react-icons/fa';
-import {FaFire as FMAButton} from 'react-icons/fa';
-import { confirmAlert } from 'react-confirm-alert'; // Import
+//import {FaFire as FMAButton} from 'react-icons/fa';
+//import { confirmAlert } from 'react-confirm-alert'; // Import
 import 'react-confirm-alert/src/react-confirm-alert.css' // Import css
 import {FaHistory as HistoryButton} from 'react-icons/fa';
 import {FaHeart as FavoritesButton} from 'react-icons/fa';
@@ -16,21 +16,21 @@ import {FaEnvira as FreshButton} from 'react-icons/fa';
 
 export default class Menu extends Component {
 
-    resetPlaylists() {
-        confirmAlert({
-          title: 'Clear all your playlists',
-          message: 'Are you sure?',
-          buttons: [
-            {
-              label: 'Yes',
-              onClick: () => this.props.resetMeekaLocalStorage()
-            },
-            {
-              label: 'No'
-            }
-          ]
-        }) 
-    };
+    //resetPlaylists() {
+        //confirmAlert({
+          //title: 'Clear all your playlists',
+          //message: 'Are you sure?',
+          //buttons: [
+            //{
+              //label: 'Yes',
+              //onClick: () => this.props.resetMeekaLocalStorage()
+            //},
+            //{
+              //label: 'No'
+            //}
+          //]
+        //}) 
+    //};
 
 
     render() {
@@ -49,15 +49,15 @@ export default class Menu extends Component {
         let historyLink = "/meeka/history" + searchExtra;
         let favoritesLink = "/meeka/favorites" + searchExtra;
         let youtubeLink = "/meeka/youtube" + searchExtra;
-        let jamendoLink = "/meeka/jamendo" + searchExtra;
-        let fmaLink = "/meeka/fma" + searchExtra;
+       // let jamendoLink = "/meeka/jamendo" + searchExtra;
+        //let fmaLink = "/meeka/fma" + searchExtra;
         return <div className='menu' style={{textAlign:'left',width:'100%'}} >
             <br/>
             <div className='list'  style={{width:'100%',clear:'both'}} >
                 <div className='item' style={{width:'100%'}}>
                    
                    
-                    {this.props.isLoggedIn() && 
+                    {
                    <Link to={searchLink}   ><button className='btn' style={buttonStyle} ><SearchButton  size={size}/> Library</button></Link>
                     
                     }
@@ -68,8 +68,7 @@ export default class Menu extends Component {
                     {!this.props.isLoggedIn() && <Link to="/login/login"   ><button className='btn' style={buttonStyle} ><ProfileButton  size={size}/> Login</button></Link>}
                     
                     
-                     {false && !this.props.isLoggedIn() && <button className='btn btn-danger' style={{width:'8em',float:'right',marginLeft:'0.5em'}} onClick={this.resetPlaylists.bind(this)}  >Reset Playlists</button> }
-                    
+                
                 </div>
                 
                 {this.props.isLoggedIn() && 
@@ -103,7 +102,8 @@ export default class Menu extends Component {
                     //<Link to={fmaLink}   ><button className='btn'  style={buttonStyle} ><FMAButton  size={size} /> FMA</button></Link>
                     
 //
-
+      //{false && !this.props.isLoggedIn() && <button className='btn btn-danger' style={{width:'8em',float:'right',marginLeft:'0.5em'}} onClick={this.resetPlaylists.bind(this)}  >Reset Playlists</button> }
+                   
 
 //<Link to="/meeka/help"   ><button className='btn' style={buttonStyle} ><HelpButton  size={size}/> Help</button></Link>
                     

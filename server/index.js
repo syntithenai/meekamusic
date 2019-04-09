@@ -21,6 +21,9 @@ var authenticate = require('react-express-oauth-login-system/authenticate');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+// session required for twitter login
+app.use(session({ secret: config.sessionSalt ? config.sessionSalt : 'board GOAT boring do boat'}));
+
 app.all('*', function (req, res, next) {
   console.log(['SERVER REQUEST',req.url,req.query,req.body])
   next() // pass control to the next handler
@@ -59,7 +62,7 @@ app.use('/', proxy({ target: config.reactServer }))
 // allow self generated certs
 let options = {}
 let port = '80'
-if (process.env.MEEKA_DISABLE_SSL) {
+if (process.env.MEEKA_DISABLE_SSL !== 'true') {
 	process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 	options = {
 		key: fs.readFileSync('./key.pem'),

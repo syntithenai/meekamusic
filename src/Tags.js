@@ -120,7 +120,7 @@ export default class Tags extends Component {
     };
     
     render() {
-        let that = this;
+      //  let that = this;
         //const fontSizeMapper = word => 2* Math.log2(word.value+1) * 2;
         //const rotate = word => 0; //word.value % 360;
         //const wordCloudWidth = window.innerWidth * 0.9;
@@ -134,8 +134,11 @@ export default class Tags extends Component {
                 if (val && val.text && val.text.length > 0) {
                     let linkTo="/meeka/search/tag/"+val.text;
                      return (
-                     <Link to={linkTo}  key={key} onClick={() => that.setFilterTagOnClick(val.text)} ><button onClick={() => that.setFilterTagOnClick(val.value)} style={{border:'1px solid blue',margin:'0.2em',fontSize:'0.9em',minHeight:'2em',minWidth:'2em',backgroundColor:'aliceblue'}} className='tag btn' key={key} ><Music/> {val.text} <span style={{backgroundColor:'lightblue',borderRadius:'20px',padding:'0.2em'}} >{val.value}</span></button></Link>
-                     )                    
+                     <Link to={linkTo}  key={key} ><button  style={{border:'1px solid blue',margin:'0.2em',fontSize:'0.9em',minHeight:'2em',minWidth:'2em',backgroundColor:'aliceblue'}} className='tag btn' key={key} ><Music/> {val.text} <span style={{backgroundColor:'lightblue',borderRadius:'20px',padding:'0.2em'}} >{val.value}</span></button></Link>
+                     )                   
+                     // onClick={() => that.setFilterTagOnClick(val.text)}
+                     //onClick={() => that.setFilterTagOnClick(val.value)} 
+                      
                 } else {
                     return '';
                 }

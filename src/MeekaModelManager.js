@@ -5,7 +5,7 @@ import {debounce} from 'throttle-debounce';
 export default {
 	
 	redirectTo(url) {
-		let that = this;
+		//let that = this;
 		console.log(['REDIR',url])
         //let lastPath = localStorage.get('lastPath')
         //if (false && lastPath && lastPath.length > 0) {
@@ -483,6 +483,7 @@ export default {
     
     addTrack: function(track,playlistKey) {
         //console.log(['ADD TRACK',track,playlistKey]);
+        if (!playlistKey)  playlistKey=this.props.currentPlaylist;
         if (!window.isNaN(playlistKey) && this.state.playlists.length > playlistKey) {
             let userId = (this.props.user && this.props.user._id && this.props.user._id.length > 0) ? this.props.user._id : '';
             if (!track._id) track._id=new ObjectId().toString();
@@ -498,6 +499,7 @@ export default {
     
     addTracks: function(tracks,playlistKey) {
         //console.log(['ADD TRACK',track,playlistKey]);
+        if (!playlistKey)  playlistKey=this.props.currentPlaylist;
         if (!window.isNaN(playlistKey) && this.state.playlists.length > playlistKey) {
             let userId = (this.props.user && this.props.user._id && this.props.user._id.length > 0) ? this.props.user._id : '';
             let playlists=this.state.playlists;
@@ -516,12 +518,15 @@ export default {
     
     startPlayTrack: function(track,playlistKey) {
         console.log(['START PLAY TRACK',track,playlistKey,this.state.playlists]);
+        if (window.isNaN(playlistKey) || this.state.playlists.length < playlistKey)  playlistKey=this.props.currentPlaylist;
+        console.log(['START PLAY TRACK',playlistKey]);
         this.functions.clearErrors();
         if (!window.isNaN(playlistKey) && this.state.playlists.length > playlistKey) {
-            let userId = (this.props.user && this.props.user._id && this.props.user._id.length > 0) ? this.props.user._id : '';
+            console.log(['START PLAY TRACK',playlistKey]);
+			let userId = (this.props.user && this.props.user._id && this.props.user._id.length > 0) ? this.props.user._id : '';
             if (!track._id) track._id=new ObjectId().toString();
             let playlists=this.state.playlists;
-        //    console.log(['ADD TRACK really ',track,playlistKey]);
+            console.log(['ADD TRACK really ',track,playlistKey]);
             if (!Array.isArray(playlists[playlistKey].items)) playlists[playlistKey].items = []
             let index = playlists[playlistKey].items.length;
             playlists[playlistKey].items.push(track);
@@ -532,6 +537,7 @@ export default {
             //this.functions.saveMeekaToLocalStorage();
             let that=this;
             setTimeout(function() {
+				console.log(['START PLAYING']);
                 that.functions.play();
                 if (that.props.user) that.functions.postData(that.props.apiUrl+'/saveplayer',{userId:that.props.user._id,playlistId:that.state.playlistId,isPlaying:'true'});
             },1000)
@@ -665,13 +671,18 @@ export default {
        // console.log(['ONERROR',this.state.errorCount]);
         this.functions.stopWaiting();
         let failCount = this.state.errorCount;
-        if (failCount < 10) {
+        if (failCount < 3) {
             this.functions.addError();
-            if (Math.random() >= 0.5) this.functions.nextTrack();
             setTimeout(function() {
                 //that._player.current.play();
                 that.functions.play();
                // that.functions.saveMeekaToLocalStorage();
+            },500);                    
+		} else if (failCount < 10) {
+            this.functions.addError();
+            if (Math.random() >= 0.4) this.functions.nextTrack();
+            setTimeout(function() {
+                that.functions.play();
             },500);            
         }
     },
@@ -698,13 +709,14 @@ export default {
     
     logSeen() {
         //let that = this;
-          let currentTrack = this.functions.getCurrentTrack();
-          this.functions.fetchData(this.props.apiUrl+'/logseen?userId='
-          +((this.props.user && this.props.user._id && this.props.user._id.length > 0) ? this.props.user._id : '')
-          +'&trackId='
-          +((currentTrack && currentTrack._id && currentTrack._id.length > 0) ? currentTrack._id : '') 
-          );
-          
+		let currentTrack = this.functions.getCurrentTrack();
+		if (this.props.user && this.props.user._id && this.props.user._id.length > 0 && currentTrack && currentTrack._id && currentTrack._id.length > 0) {
+			  this.functions.fetchData(this.props.apiUrl+'/logseen?userId='
+			  +((this.props.user && this.props.user._id && this.props.user._id.length > 0) ? this.props.user._id : '')
+			  +'&trackId='
+			  +((currentTrack && currentTrack._id && currentTrack._id.length > 0) ? currentTrack._id : '') 
+			  );
+		}
     },
     
     onPause() {
@@ -717,27 +729,42 @@ export default {
     },
     
     
-    setSearchFilter(filter) {
-      //  console.log(['set filter',filter]);
-        // eslint-disable-next-line
-        var punctRE = /[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,\-.\/:;<=>?@\[\]^_`{|}~]/g;
-        this.setState({searchFilter:filter.replace(punctRE, " ")}); //
-        
-        //let tag = this.props.searchFilterTag ? "/"+this.props.searchFilterTag + "/" : '';
-        //this.props.history.push("/meeka/search/"+tag+filter.replace(punctRE, " "));
-        //this.functions.saveMeekaToLocalStorage();
-    },
-    
-    setSearchFilterTag(filter) {
-     //   console.log(['set filter tag',filter]);
+    //setSearchFilters(queryParts,prevProps={}) {
+		//if ((prevProps.searchFilter || queryParts.searchFilter) && prevProps.searchFilter != queryParts.searchFilter) {
+			//this.functions.setSearchFilter(queryParts.searchFilter);
+		//}
+		//if ((prevProps.searchFilterTag || queryParts.searchFilterTag) && prevProps.searchFilterTag != queryParts.searchFilterTag) {
+			//this.functions.setSearchFilterTag(queryParts.searchFilterTag);
+		//}
+		//if ((prevProps.searchFilterArtist || queryParts.searchFilterArtist) && prevProps.searchFilterArtist != queryParts.searchFilterArtist) {
+			//this.functions.setSearchFilterArtist(queryParts.searchFilterArtist);
+		//}
+		//if ((prevProps.searchFilterAlbum || queryParts.searchFilterAlbum) && prevProps.searchFilterAlbum != queryParts.searchFilterAlbum) {
+			//this.functions.setSearchFilterAlbum(queryParts.searchFilterAlbum);
+		//}
+	//}	,
+	
+    //setSearchFilter(filter) {
+      ////  console.log(['set filter',filter]);
+        //// eslint-disable-next-line
         //var punctRE = /[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,\-.\/:;<=>?@\[\]^_`{|}~]/g;
-        //let val = this.props.searchFilter ? this.props.searchFilter : '';
-        //let tag = filter ? "/"+filter + "/" : '';
-        this.setState({searchFilterTag:filter});
-        //this.props.history.push("/meeka/search/"+tag+val.replace(punctRE, " "));
-        //this.functions.saveMeekaToLocalStorage();
-    },
+        //this.setState({searchFilter:filter ? filter.replace(punctRE, " "):''}); //
+        
+        ////let tag = this.props.searchFilterTag ? "/"+this.props.searchFilterTag + "/" : '';
+        ////this.props.history.push("/meeka/search/"+tag+filter.replace(punctRE, " "));
+        ////this.functions.saveMeekaToLocalStorage();
+    //},
     
+    //setSearchFilterTag(filter) {
+        //this.setState({searchFilterTag:filter});
+    //},
+    //setSearchFilterArtist(filter) {
+        //this.setState({searchFilterArtist:filter});
+    //},
+    //setSearchFilterAlbum(filter) {
+        //this.setState({searchFilterAlbum:filter});
+    //},
+   
     //setArtists(results) {
         ////let newResults = this.state.searchResults;
         ////// default library search rsults all artists
@@ -758,13 +785,13 @@ export default {
         this.setState({searchResults:newResults});
     },
      
-    setSearchResultsScrollToIndex(type,index) {
-     //   console.log(['set results scroll index',type,index]);
-        let newResults = this.state.searchResultsScrollToIndex ? this.state.searchResultsScrollToIndex : {};
-        newResults[type] = index;
-        this.setState({searchResultsScrollToIndex:newResults});
-        //this.functions.saveMeekaToLocalStorage();
-    },
+    //setSearchResultsScrollToIndex(type,index) {
+        //console.log(['set results scroll index',type,index]);
+        //let newResults = this.state.searchResultsScrollToIndex ? this.state.searchResultsScrollToIndex : {};
+        //newResults[type] = index;
+        //this.setState({searchResultsScrollToIndex:newResults});
+        ////this.functions.saveMeekaToLocalStorage();
+    //},
     
     setRenderedTags(tags) {
         this.setState({renderedTags:tags});

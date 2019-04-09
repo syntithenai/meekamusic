@@ -25,9 +25,10 @@ export default class LibraryList extends Component {
         this.renderRow=this.renderRow.bind(this);
         this._noRowsRenderer=this._noRowsRenderer.bind(this);
         this._getRowHeight=this._getRowHeight.bind(this);
-        this.setSearchFilterTag=this.setSearchFilterTag.bind(this);
+       // this.setSearchFilterTag=this.setSearchFilterTag.bind(this);
         this.onScroll=this.onScroll.bind(this);
         this.toggleExpandedArtist=this.toggleExpandedArtist.bind(this);
+     //   this.getSearchUrl = this.getSearchUrl.bind(this)
     }
     
     
@@ -69,20 +70,20 @@ export default class LibraryList extends Component {
         
     };
     
-    componentDidUpdate(prevProps) {
-      //// Typical usage (don't forget to compare props):
-      //if (this.props.userID !== prevProps.userID) {
-        //this.fetchData(this.props.userID);
-      //}
-      if (listRef && listRef.current) {
-          listRef.current.resetAfterIndex(0);
-          //if (this.props.searchResultsScrollToIndex.artists !== prevProps.searchResultsScrollToIndex.artists) {
-              //listRef.current.scrollTo(this.props.searchResultsScrollToIndex.artists);
-          //}
+    //componentDidUpdate(prevProps) {
+      ////// Typical usage (don't forget to compare props):
+      ////if (this.props.userID !== prevProps.userID) {
+        ////this.fetchData(this.props.userID);
+      ////}
+      ////if (listRef && listRef.current) {
+          ////listRef.current.resetAfterIndex(0);
+          //////if (this.props.searchResultsScrollToIndex.artists !== prevProps.searchResultsScrollToIndex.artists) {
+              //////listRef.current.scrollTo(this.props.searchResultsScrollToIndex.artists);
+          //////}
           
-      }
+      ////}
       
-    }
+    //}
     
     shouldComponentUpdate(prevProps) {
         //return true;
@@ -464,10 +465,10 @@ export default class LibraryList extends Component {
       //style        // Style object to be applied to row (to position it)
     //}) {
     
-    setSearchFilterTag(e,tag) {
-        e.preventDefault();
-        this.props.setSearchFilterTag(tag);
-    };
+    //setSearchFilterTag(e,tag) {
+        //e.preventDefault();
+        //this.props.setSearchFilterTag(tag);
+    //};
     
     renderItems(items,albumKey,showArtist=false) {
         let that = this;
@@ -496,8 +497,7 @@ export default class LibraryList extends Component {
                         //</span>
                         return <div style={{width: '100%',minHeight:'3em'}}  onClick={() => that.props.playTrack(item,that.props.currentPlaylist)} className={oddEvenInner} key={item._id} >
                         
-                            <span style={{width:'70%',marginRight:'1em'}} href="#" ><b>{trackNumber}</b> {item.title}<br/>{artist}</span>
-                            
+                            <span style={{width:'70%',marginRight:'1em'}} href="#" ><b>{trackNumber}</b> {item.title}&nbsp;<span><b>({item.collection})</b></span><br/>{artist}</span>
                             </div>
  
                     } else {
@@ -509,182 +509,182 @@ export default class LibraryList extends Component {
              })
             
         } else {
-            return null;
+            return null; 
         }
         //console.log(['sINGLE RENder',items]);
         
     };
     
      
-    setFilterTagOnClick(tag) {
-        this.props.setSearchFilterTag(tag);
-        this.props.setSearchFilter('');
-    }
+    //setFilterTagOnClick(tag) {
+        //this.props.setSearchFilterTag(tag);
+        //this.props.setSearchFilter('');
+    //}
     
-    setFilterOnClick(filter) {
-        this.props.setSearchFilter(filter);
-        this.props.setSearchFilterTag('');
-    }
+    //setFilterOnClick(filter) {
+        //this.props.setSearchFilter(filter);
+        //this.props.setSearchFilterTag('');
+    //}
     
-    renderRow(index,style) {
-        let that = this;
-        let artist = this.props.searchResults && this.props.searchResults.local && this.props.searchResults.local[index] ? this.props.searchResults.local[index] : null; 
-        //console.log(['RENDER LIB ROW',artist]);
-        if (artist && artist.html) {
-          //  console.log(['HTML OUT ROW',style]);
-            return <div style={style} key={{index}}>{artist.html}</div>
-        } else {
-            //let artist = this.props.artists[index];
-            //console.log(['RENDERROWQ',artist]);
-            //return <div>row</div>
-            let finalAlbums=[];
-            let key = new ObjectId().toString();
-            //let keyName='artist-'+key;
-            let keyNameChildren='artist-'+key+'-children';
-            let hashKeyNameChildren='#artist-'+key+'-children';
-            //let keyNameParent='artist-'+key+'-parent';
-           // let hashKeyNameParent='#artist-'+key+'-parent';  
-            // render tags
-            let tagsRendered=[];
-            let oddEven = index%2 ? 'odd' : 'even';
-            let indexA=0;
-            if (artist) {
-                if (artist.matchingAlbums) {
-                    for (let akey in artist.matchingAlbums) {
-                        let album = artist.matchingAlbums[akey];
-                        //console.log(['ROW',akey,artist.matchingAlbums]);
-                        //if (!artist.matchingAlbums || artist.matchingAlbums.indexOf(akey) !== -1) {
-                            let iskey = "sk"+akey+album+Math.random(5);
-                            
-                            let albumHashKeyNameChildren='#artist-'+key+'-children-'+akey;
-                            let albumKeyNameChildren='artist-'+key+'-children-'+akey;
-                            let tracks = (artist.albumTracks && artist.albumTracks.hasOwnProperty(akey)) ? artist.albumTracks[akey] : [];
-                            
-                            let renderedTags=null;
-                            if (artist.genres) {
-                                //console.log(['RENGENRES',artist.genres]);
-                                if (artist.genres.hasOwnProperty(akey)) {
-                                    renderedTags=Object.keys(artist.genres[akey]).map(function(tagName) {
-                                        let nKey = iskey + tagName;
-                                        let tagLinkTo = "/meeka/search/tag/"+tagName;
-                                        return <Link key={nKey} to={tagLinkTo} style={{float:'right'}} onClick={() => that.setFilterTagOnClick(tagName)}>&nbsp;<button style={{fontSize:'0.7em'}}  className='btn'  ><Music size={12}/>&nbsp;{tagName}</button></Link>
-                                    });                                
-                                }
-                                
-                            }
-                            
-                            let linkTo = "/meeka/search/"+encodeURI(artist.originalTitle+' ' +album);
-                            //"url('/albumart?artist="+"greylarsonpaddyleague"+"&album="+"greylarsonpaddyleaguedarkofthemoon"+")"
-                            let bgImage = "url('"+that.props.apiUrl+"/albumart?artist="+encodeURI(artist.title)+"&album="+encodeURI(akey)+"')"
-                            //http://localhost:7001/albumart?artist=greylarsonpaddyleague&album=greylarsonpaddyleaguedarkofthemoon
-                            let imageSize = ((tracks.length + 1) * 2.2) + 'em';
-                            let albumArtStyle = {backgroundImage:bgImage, position:'absolute',opacity:'0.6',backgroundRepeat: 'no-repeat',backgroundSize: '100% 100%', right: '20px', top:'65px',width: imageSize,height: imageSize,maxWidth:'40%',backgroundPosition:'right',zIndex:0};
-                            let ikey = "k"+akey+album+Math.random(5);
-                            //if (!artist.matchingAlbums || artist.matchingAlbums.indexOf(akey) !== -1) {
-                                
-          // eslint-disable-next-line
-                                finalAlbums.push(<div style={{backgroundColor:'white',width:'100%',position:'relative'}} key={album} className='list-group-item'  >
-                                
-                                   {tracks && tracks.length > 0 && <div style={albumArtStyle}></div>}
-                                   
-                                    <span style={{float:'right'}}>
-                                        <button onClick={(e) => that.playAlbum(artist.title,akey)}  className='btn' style={{marginTop:'-0.4em', marginLeft:'0.2em'}}>
-                                        <PlayButton/><span className="d-none d-md-inline"> Play</span>
-                                        </button>
-                                    </span>
-                                    
-                                    <span style={{float:'right'}}>
-                                        <button onClick={(e) => that.addAlbum(artist.title,akey)}  className='btn' style={{marginTop:'-0.4em', marginLeft:'0.2em'}}>
-                                        <AddButton/><span className="d-none d-md-inline"> Add</span>
-                                        </button>
-                                    </span>
-                                    
-                                    <div  style={{width: '70%',fontSize:'1.1em',fontWeight:'bold'}}  >
-                                      <a  disdata-toggle="collapse" data-target={albumHashKeyNameChildren} onClick={(e) =>that.toggleAlbumTracks(e,indexA,artist.title,akey)} style={{float:'left',display:'inline'}} ><OpenCloseButton size='30' /></a><Link to={linkTo} key={ikey}     onClick={() => that.setFilterOnClick(artist.originalTitle+' ' +album)}
-     >&nbsp;&nbsp;{(album && album.length > 0) ? album : 'Unknown Album' }</Link>
-                                      &nbsp;&nbsp;&nbsp;{renderedTags}
-                                    </div>
-                                    <div id={albumKeyNameChildren}  >
-                                    <br/>
-                                    {this.renderItems(tracks,akey)}
-                                    </div>
-                                </div>);    
-                                
-                            //}
-                        //}
-                        indexA++;
-                        
-                        
-                    }
-                    
-                }
-                if (artist.genre && artist.genre.length > 0) {
-                    //console.log('artist.genre');
-                    //console.log(artist.genre);
-                    for (let k in artist.genre) {
-                        let artistTags=artist.genre[k];
-                        let aParts = artistTags.split(",");
-                        for (let tag in aParts) {
-                            //console.log([tag,aParts[tag]]);
-                        
-                            //if (!Array.isArray(tagsRendered[artist.title])) tagsRendered[artist.title]=[]
-                            let key=artist.title+"-"+aParts[tag];
-                            let linkTo="/meeka/search/tag/"+aParts[tag];
-                            let tagRendered=<Link to={linkTo} key={key} ><button  className='btn' style={{marginLeft:'0.5em'}} >{aParts[tag]}&nbsp;<Music/></button></Link>
-                            tagsRendered.push(tagRendered);
-                        }
-                        //tags[i] = Array.from(new Set(tags[i]))   
-                    }                    
-                }
-                //console.log('tagsRendered');
-                //console.log(tagsRendered);
-                //this.props.isArtistExpanded(artist.title) && 
-            //} else {
-                //return [];
-            //}
-                           
-                
-                let collapseClass="tracks list-group";
-                let linkToMain = artist ? "/meeka/search/"+encodeURI(artist.originalTitle) : '';
-                let akey  = artist ? "k"+artist.title : '';
-                //if (this.props.isArtistExpanded(artist._id)) collapseClass="tracks list-group"
-                return (<div className={oddEven} style={Object.assign({ border: '1px solid black'},style)}  key={key}  >
-                             {true && 
-                                 
-                                <div style={{position:'relative', width: "100%"}}>
-                                    
-                                    <span style={{float:'right'}}>
-                                        <button onClick={(e) => that.playArtist(artist.title)}   className='btn' style={{marginLeft:'0.2em'}}>
-                                        <PlayButton/><span className="d-none d-md-inline" > Play</span>
-                                        </button>
-                                    </span>
-                                     
-                                     <span style={{float:'right'}}>
-                                        <button onClick={(e) => that.addArtist(artist.title)}  className='btn' style={{marginLeft:'0.2em'}}>
-                                        <AddButton/><span className="d-none d-md-inline" > Add</span>
-                                        </button>
-                                    </span>
-                                    
-                                     {artist.matchingAlbums && Object.keys(artist.matchingAlbums).length > 0 && <div style={{ width: '80%',textAlign:'left'}} ><a  data-toggle="collapse" data-target={hashKeyNameChildren} onClick={(e) =>that.toggleExpandedArtist(artist.title,index)} style={{float:'left',display:'inline'}} ><OpenCloseButton size='30' /></a><span className="d-none d-md-inline" >&nbsp;&nbsp;</span><span style={{marginLeft:'0.2em'}}><b style={{fontSize:'1.2em'}}>&nbsp;<Link to={linkToMain} key={akey} onClick={() => that.setFilterOnClick(artist.originalTitle)} >{artist.originalTitle}</Link></b>  <br/> {tagsRendered}</span></div>}
-                                     
-                                  
-                                     
-                                    {this.props.isArtistExpanded(artist.title) && <div  id={keyNameChildren} style={{textAlign:'left',width:'100%', zIndex:1500,'backgroundColor':'white'}} className={collapseClass} >    
-                                        {finalAlbums} 
-                                    </div>}
-                                    
-                                    
-                                </div>
-                                 
-                             }
-                        </div>);
+   
+renderRow(index,style) {
+	let that = this;
+	let artist = this.props.searchResults && this.props.searchResults.local && this.props.searchResults.local[index] ? this.props.searchResults.local[index] : null; 
+	console.log(['RENDER LIB ROW',artist,index,(this.props.searchResults ? this.props.searchResults.local: 'no local results')]);
+	if (artist && artist.html) {
+		//  console.log(['HTML OUT ROW',style]);
+		return <div style={style} key={{index}}>{artist.html}</div>
+	} else {
+		//let artist = this.props.artists[index];
+		//console.log(['RENDERROWQ',artist]);
+		//return <div>row</div>
+		let finalAlbums=[];
+		let key = new ObjectId().toString();
+		//let keyName='artist-'+key;
+		let keyNameChildren='artist-'+key+'-children';
+		let hashKeyNameChildren='#artist-'+key+'-children';
+		//let keyNameParent='artist-'+key+'-parent';
+		// let hashKeyNameParent='#artist-'+key+'-parent';  
+		// render tags
+		let tagsRendered=[];
+		let oddEven = index%2 ? 'odd' : 'even';
+		let indexA=0;
+		if (artist) {
+			if (artist.matchingAlbums) {
+				for (let akey in artist.matchingAlbums) {
+					let album = artist.matchingAlbums[akey];
+					//console.log(['ROW',akey,artist.matchingAlbums]);
+					//if (!artist.matchingAlbums || artist.matchingAlbums.indexOf(akey) !== -1) {
+					let iskey = "sk"+akey+album+Math.random(5);
 
-        } else {
-            return 'empty';
-        }
-            
-        } 
-    }
+					let albumHashKeyNameChildren='#artist-'+key+'-children-'+akey;
+					let albumKeyNameChildren='artist-'+key+'-children-'+akey;
+					let tracks = (artist.albumTracks && artist.albumTracks.hasOwnProperty(akey)) ? artist.albumTracks[akey] : [];
+
+					let renderedTags=null;
+					if (artist.genres) {
+						//console.log(['RENGENRES',artist.genres]);
+						if (artist.genres.hasOwnProperty(akey)) {
+							renderedTags=Object.keys(artist.genres[akey]).map(function(tagName) {
+								let nKey = iskey + tagName;
+								let tagLinkTo = that.props.getSearchUrl({searchFilterTag:tagName,searchFilterArtist:'',searchFilterAlbum:'',searchFilter:''},true);
+								return <Link key={nKey} to={tagLinkTo} style={{float:'right'}} >&nbsp;<button style={{fontSize:'0.7em'}}  className='btn'  ><Music size={12}/>&nbsp;{tagName}</button></Link>
+							});                                
+						}
+
+					}
+					// console.log(['GSU',this.props.getSearchUrl,that.props.getSearchUrl])
+					let linkTo = this.props.getSearchUrl({searchFilterTag:'',searchFilter:'',searchFilterArtist:artist.title,searchFilterAlbum:akey},true);
+					//"url('/albumart?artist="+"greylarsonpaddyleague"+"&album="+"greylarsonpaddyleaguedarkofthemoon"+")"
+					let bgImage = "url('"+that.props.apiUrl+"/albumart?artist="+encodeURI(artist.title)+"&album="+encodeURI(akey)+"')"
+					//http://localhost:7001/albumart?artist=greylarsonpaddyleague&album=greylarsonpaddyleaguedarkofthemoon
+					let imageSize = ((tracks.length + 1) * 2.2) + 'em';
+					let albumArtStyle = {backgroundImage:bgImage, position:'absolute',opacity:'0.6',backgroundRepeat: 'no-repeat',backgroundSize: '100% 100%', right: '20px', top:'65px',width: imageSize,height: imageSize,maxWidth:'40%',backgroundPosition:'right',zIndex:0};
+					let ikey = "k"+akey+album+Math.random(5);
+					//if (!artist.matchingAlbums || artist.matchingAlbums.indexOf(akey) !== -1) {
+
+					// eslint-disable-next-line
+					finalAlbums.push(<div style={{backgroundColor:'white',width:'100%',position:'relative'}} key={album} className='list-group-item'  >
+
+					{tracks && tracks.length > 0 && <div style={albumArtStyle}></div>}
+
+					<span style={{float:'right'}}>
+					<button onClick={(e) => that.playAlbum(artist.title,akey)}  className='btn' style={{marginTop:'-0.4em', marginLeft:'0.2em'}}>
+					<PlayButton/><span className="d-none d-md-inline"> Play</span>
+					</button>
+					</span>
+
+					<span style={{float:'right'}}>
+					<button onClick={(e) => that.addAlbum(artist.title,akey)}  className='btn' style={{marginTop:'-0.4em', marginLeft:'0.2em'}}>
+					<AddButton/><span className="d-none d-md-inline"> Add</span>
+					</button>
+					</span>
+
+					<div  style={{width: '70%',fontSize:'1.1em',fontWeight:'bold'}}  >
+					<button disdata-toggle="collapse" data-target={albumHashKeyNameChildren} onClick={(e) =>that.toggleAlbumTracks(e,indexA,artist.title,akey)} style={{float:'left',display:'inline'}} ><OpenCloseButton size='30' /></button><Link to={linkTo} key={ikey}     
+					>&nbsp;&nbsp;{(album && album.length > 0) ? album : 'Unknown Album' }</Link>
+					&nbsp;&nbsp;&nbsp;{renderedTags}
+					</div>
+					<div id={albumKeyNameChildren}  >
+					<br/>
+					{this.renderItems(tracks,akey)}
+					</div>
+					</div>);    
+
+					//}
+					//}
+					indexA++;
+
+
+				}
+			}
+			
+			if (artist.genre && artist.genre.length > 0) {
+				//console.log('artist.genre');
+				//console.log(artist.genre);
+				for (let k in artist.genre) {
+					let artistTags=artist.genre[k];
+					let aParts = artistTags.split(",");
+					for (let tag in aParts) {
+					//console.log([tag,aParts[tag]]);
+						//if (!Array.isArray(tagsRendered[artist.title])) tagsRendered[artist.title]=[]
+						let key=artist.title+"-"+aParts[tag];
+						let linkTo=this.props.getSearchUrl({searchFilterTag:tag},true);  // tag/"+aParts[tag];
+						let tagRendered=<Link to={linkTo} key={key} ><button  className='btn' style={{marginLeft:'0.5em'}} >{aParts[tag]}&nbsp;<Music/></button></Link>
+						tagsRendered.push(tagRendered);
+					}
+				//tags[i] = Array.from(new Set(tags[i]))   
+				}                    
+			}
+			//console.log('tagsRendered');
+			//console.log(tagsRendered);
+			//this.props.isArtistExpanded(artist.title) && 
+			//} else {
+			//return [];
+			//}
+
+
+			let collapseClass="tracks list-group";
+			let linkToMain = this.props.getSearchUrl({searchFilterTag:'',searchFilterAlbum:'',searchFilter:'',searchFilterArtist: encodeURI(artist.title) });
+			let akey  = artist ? "k"+artist.title : '';
+			//if (this.props.isArtistExpanded(artist._id)) collapseClass="tracks list-group"
+			return (<div className={oddEven} style={Object.assign({ border: '1px solid black'},style)}  key={key}  >
+			{true && 
+
+			<div style={{position:'relative', width: "100%"}}>
+
+			<span style={{float:'right'}}>
+			<button onClick={(e) => that.playArtist(artist.title)}   className='btn' style={{marginLeft:'0.2em'}}>
+			<PlayButton/><span className="d-none d-md-inline" > Play</span>
+			</button>
+			</span>
+
+			<span style={{float:'right'}}>
+			<button onClick={(e) => that.addArtist(artist.title)}  className='btn' style={{marginLeft:'0.2em'}}>
+			<AddButton/><span className="d-none d-md-inline" > Add</span>
+			</button>
+			</span>
+
+			{artist.matchingAlbums && Object.keys(artist.matchingAlbums).length > 0 && <div style={{ width: '80%',textAlign:'left'}} ><button  data-toggle="collapse" data-target={hashKeyNameChildren} onClick={(e) =>that.toggleExpandedArtist(artist.title,index)} style={{float:'left',display:'inline'}} ><OpenCloseButton size='30' /></button><span className="d-none d-md-inline" >&nbsp;&nbsp;</span><span style={{marginLeft:'0.2em'}}><b style={{fontSize:'1.2em'}}>&nbsp;<Link to={linkToMain} key={akey}  >{artist.originalTitle}</Link></b>  <br/> {tagsRendered}</span></div>}
+
+
+
+			{this.props.isArtistExpanded(artist.title) && <div  id={keyNameChildren} style={{textAlign:'left',width:'100%', zIndex:1500,'backgroundColor':'white'}} className={collapseClass} >    
+			{finalAlbums} 
+			</div>}
+
+
+			</div>
+
+			}
+			</div>);
+
+		} else {
+			return 'empty row';
+		}
+
+	} 
+}
    //{(!artist.albums || Object.keys(artist.albums).length === 0) && <div style={{ width: '80%',textAlign:'left'}} ><span className='d-none d-md-inline' >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span style={{marginLeft:'0.2em', textAlign:'left'}}><b style={{fontSize:'1.2em'}}>{artist.originalTitle}</b> <br/>  {tagsRendered}</span></div>}
                             
     _noRowsRenderer(styles) {
@@ -694,51 +694,65 @@ export default class LibraryList extends Component {
     _getRowHeight(index) {
         const single=70;
         let height = single;
-        //console.log('GRH',index,this.props.artists);
-         let artist = this.props.searchResults && this.props.searchResults.local && this.props.searchResults.local[index] ? this.props.searchResults.local[index] : null; 
-        //return 300;
-        if (artist) {
-            if (this.props.isArtistExpanded(artist.title)) {
-                //console.log(['expanded',height]);
-                //return 300;
-                //console.log(this.props.artists[index]);
-                if (this.props.artists && this.props.artists.hasOwnProperty(index)) {
-                    //console.log(['art jas omdex',index]);
-                    if (this.props.artists[index].matchingAlbums && Object.keys(this.props.artists[index].matchingAlbums).length > 0) {
-                        //console.log(['album offset',Object.keys(this.props.artists[index].albums).length]);
-                        height += (Object.keys(this.props.artists[index].matchingAlbums).length) * (single);
-                    }
-                    if (this.props.artists[index].albumTracks) {
-                        let sum=0;
-                        for (let ti in this.props.artists[index].albumTracks) {
-                            let album = this.props.artists[index].albumTracks[ti];
-                            if (Array.isArray(album)) {
-                                sum += album.length;
-                            }
-                        }
-                        //console.log(['track offset',this.props.artists[index].albumTracks]);
-                        height += sum * (single*0.7);
-                    }
-                        //let a = (this.props.artists[index].matchingAlbums.length + 1) * (single) + ;
-                        //console.log(['GETROWH',a]);
-                        //return a;
-                    //} else {
-                        //let a =(Object.keys(this.props.artists[index].albums).length + 1) * (single);
-                        //console.log(['GETROWHb',a]);
-                        //return a;
-                    //}
-                }
-            }
-        }
-        let spacer = (index  >= this.props.searchResults.local.length - 1 ) ? 400 : 0
-                
-        //console.log(['height',height]);
-        return height +  spacer;
+        if ( this.props.searchResults && this.props.searchResults.local) {
+			//console.log('GRH',index,this.props.artists);
+			 let artist =this.props.searchResults.local[index] ? this.props.searchResults.local[index] : null; 
+			//return 300;
+			if (artist) {
+				if (this.props.isArtistExpanded(artist.title)) {
+					//console.log(['expanded',height]);
+					//return 300;
+					//console.log(this.props.artists[index]);
+					if (this.props.artists && this.props.artists.hasOwnProperty(index)) {
+						//console.log(['art jas omdex',index]);
+						if (this.props.artists[index].matchingAlbums && Object.keys(this.props.artists[index].matchingAlbums).length > 0) {
+							//console.log(['album offset',Object.keys(this.props.artists[index].albums).length]);
+							height += (Object.keys(this.props.artists[index].matchingAlbums).length) * (single);
+						}
+						if (this.props.artists[index].albumTracks) {
+							let sum=0;
+							for (let ti in this.props.artists[index].albumTracks) {
+								let album = this.props.artists[index].albumTracks[ti];
+								if (Array.isArray(album)) {
+									sum += album.length;
+								}
+							}
+							//console.log(['track offset',this.props.artists[index].albumTracks]);
+							height += sum * (single*0.7);
+						}
+							//let a = (this.props.artists[index].matchingAlbums.length + 1) * (single) + ;
+							//console.log(['GETROWH',a]);
+							//return a;
+						//} else {
+							//let a =(Object.keys(this.props.artists[index].albums).length + 1) * (single);
+							//console.log(['GETROWHb',a]);
+							//return a;
+						//}
+					}
+				}
+			}
+			let spacer = (index  >= this.props.searchResults.local.length - 1 ) ? 400 : 0
+					
+			//console.log(['height',height]);
+			return height +  spacer;
+		} else {
+			
+			return 400;
+		}
     }
 
     onScroll({scrollDirection,scrollOffset,scrollUpdateWasRequested}) {
-        this.props.setSearchResultsScrollToIndex('artists',scrollOffset);
-        this.props.onScroll(scrollDirection,scrollOffset,listRef);
+        	this.props.onScroll(scrollDirection,scrollOffset,listRef);
+		 //console.log(['onscroll',scrollDirection,scrollOffset,scrollUpdateWasRequested,this.props.searchResultsScrollToIndex.artists,parseInt(scrollOffset,10),parseInt(this.props.searchResultsScrollToIndex.artists ? this.props.searchResultsScrollToIndex.artists : 1,10)]);
+        //if (scrollOffset > 10 && scrollDirection === 'forward') {
+			//let offset = parseInt(this.props.searchResultsScrollToIndex.artists ? this.props.searchResultsScrollToIndex.artists : 1,10) + parseInt(scrollOffset,10);
+			//this.props.setSearchResultsScrollToIndex('artists',offset);
+			//this.props.onScroll(scrollDirection,offset,listRef);
+		//} else  if (scrollOffset > 10 && scrollDirection === 'backward') {
+			//let offset = parseInt(this.props.searchResultsScrollToIndex.artists ? this.props.searchResultsScrollToIndex.artists : 1,10) - parseInt(scrollOffset,10);
+			//this.props.setSearchResultsScrollToIndex('artists',offset);
+			//this.props.onScroll(scrollDirection,offset,listRef);
+		//}
     };
 
    
@@ -746,10 +760,11 @@ export default class LibraryList extends Component {
 
     render() {
         let that=this;
-        //console.log(this.props.artists);
+        console.log('LL LIST');
+        console.log(this.props.buttons);
         let items = this.props.searchResults.local; // = this.props.artists;
-        let initOffset = this.props.searchResultsScrollToIndex && this.props.searchResultsScrollToIndex.artists > 0 ? this.props.searchResultsScrollToIndex.artists : 0;
-        console.log(['artists ren',items,this.props.buttons]);
+       // let initOffset = 0; //this.props.searchResultsScrollToIndex && this.props.searchResultsScrollToIndex.artists > 0 ? this.props.searchResultsScrollToIndex.artists : 0;
+       // console.log(['artists ren',items,this.props.buttons]);
         
         //let paddingTop='3.8em';
         ////if (this.props.hideHeader) paddingTop='0em';
@@ -761,13 +776,16 @@ export default class LibraryList extends Component {
         //
         let height = this.props.height*0.9;
         if (Utils.isMobile()) height = height * 1.8;
-        if (!items || (items && items.length === 0)) {
+        //if (!Array.isArray(items)) items = [];
+        console.log(['SHOULD SHOW BUTTONS',this.props.buttons,items])
+        if (!Array.isArray(items) || items.length === 0) {
             items=[];
+            console.log(['no tracks push buttons',this.props.buttons]);
             items.unshift({html:this.props.buttons});   
             items.unshift({html:<b>&nbsp;</b>});
            //items.push({html:<b>&nbsp;</b>,height:200});      
         } else if ((items && items.length > 0 && !items[0].html)) {
-            //console.log(['artists push buttons',this.props.buttons]);
+            console.log(['have tracks push buttons',this.props.buttons]);
             items.unshift({html:this.props.buttons});   
             items.unshift({html:<b>&nbsp;</b>});   
             //items.push({html:<b>&nbsp;</b>,height:200});   
@@ -788,13 +806,16 @@ export default class LibraryList extends Component {
                   itemSize={this._getRowHeight}
                   width={'100%'}
                   onScroll={this.onScroll}
-                  initialScrollOffset={initOffset}
                 >
                   {({ index, style }) => {return that.renderRow(index,style)}}
                 </List>
             </div>
-          //return JSON.stringify(artists);   
-        } else {
+          //     initialScrollOffset={initOffset}
+             
+             //return JSON.stringify(artists);   
+        }
+         else {
+            //return <div></div>
             return <div><br/><br/><br/><br/>{this.props.buttons}<div className='nomatch'>No matches</div></div>
         }
         

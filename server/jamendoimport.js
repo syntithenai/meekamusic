@@ -165,8 +165,11 @@ MongoClient.connect(config.databaseConnection, (err, client) => {
 			mime: 'audio/mpeg',
 			updated : new Date().getTime(),
 			license: item.license ,
-			genre:id3Genre
+			genre:id3Genre,
+			score:{interest:0, listens:0,plays:0,favorites:0},
+			finalScore: 0
 		  }
+			
 		  let tags = [];
 		  if (item.Tags) {
 			  Object.values(item.Tags).map(function(tag) {

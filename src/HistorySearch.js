@@ -13,16 +13,23 @@ import SearchComponent from './SearchComponent'
     
     
     
-    componentDidMount() {
-        SearchComponent.prototype.componentDidMount.call(this);
-    };
+    //componentDidMount() {
+        //SearchComponent.prototype.componentDidMount.call(this);
+    //};
  
     
-        search(filter,filterTag,limit) {
-        let endPoint = this.props.endPoint;
+    search() {
+		let props = this.props.match.params;
+		console.log(this.props);
+		let filter = props.search ? props.search : '';
+        let filterTag = props.tag ? props.tag : '';
+        let filterArtist = props.artist ? props.artist : '';
+        let filterAlbum = props.album ? props.album : '';
+      
+        let endPoint = 'history';
         let that = this;
         //console.log(['LS ',filter,filterTag]);
-       // let limit=30;
+        let limit=1000;
         // prerequisites
         //if (this.props.artists && this.props.artists.length > 0) {
            // console.log('LS A');
@@ -38,7 +45,7 @@ import SearchComponent from './SearchComponent'
                 let userId = this.props.user && this.props.user._id ? this.props.user._id : 'none';
             //    console.log(['LOCAL SERCH-' ,filter,filterTag]);
                 this.props.startWaiting();
-                this.props.fetchData(this.props.apiUrl+"/"+endPoint+'?userId='+userId+'&search='+filter+'&tag='+filterTag+'&limit='+limit)
+                this.props.fetchData(this.props.apiUrl+"/"+endPoint+'?userId='+userId+'&search='+filter+'&artist='+filterArtist+'&album='+filterAlbum+'&tag='+filterTag+'&limit='+limit)
                 .then(function(json) {
                     // collate by day
                     let byDay={}
@@ -59,7 +66,7 @@ import SearchComponent from './SearchComponent'
                     
                     that.props.setSearchResults('history',byDay);
                     
-                    that.props.setSearchResultsScrollToIndex('artists',1);
+                    //that.props.setSearchResultsScrollToIndex('artists',1);
                     that.props.stopWaiting();
                 }).catch(function(ex) {
                     that.props.stopWaiting();
@@ -82,8 +89,11 @@ import SearchComponent from './SearchComponent'
     
     render() {
        // let that = this;
-        console.log('history serch');
+        console.log('history render');
         console.log(this.props.searchResults.history);
+        console.log('history render local');
+        console.log(this.props.searchResults.local);
+        
         //return (
         //<div>{JSON.stringify(this.props.searchResults.local)}</div>
         //)
